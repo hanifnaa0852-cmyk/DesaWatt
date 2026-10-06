@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useDesaWatt } from '../context/DesaWattContext';
 import { VillageId } from '../types';
-import { BackgroundGradientAnimation } from '@/components/ui/background-gradient-animation';
+import { DesaWattShaderBackground } from '@/components/ui/DesaWattShaderBackground';
 
 export const LoginPage: React.FC = () => {
   const { login, villages, setIsPublicPortal } = useDesaWatt();
@@ -34,23 +34,12 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <BackgroundGradientAnimation
-      gradientBackgroundStart="#071510"
-      gradientBackgroundEnd="#0A1828"
-      firstColor="20, 122, 75"        /* Deep Green #147A4B */
-      secondColor="245, 166, 35"      /* Solar Amber #F5A623 */
-      thirdColor="0, 95, 56"          /* Dark Forest Green #005F38 */
-      fourthColor="254, 174, 44"      /* Warm Solar Gold #FEAE2C */
-      fifthColor="19, 107, 69"        /* Emerald Energy #136B45 */
-      pointerColor="52, 211, 153"     /* Interactive cursor glow */
-      size="85%"
-      blendingValue="screen"
-      interactive={true}
-      containerClassName="min-h-screen h-screen w-screen overflow-y-auto"
-      className="min-h-screen flex flex-col justify-between"
-    >
+    <div className="min-h-screen relative text-white flex flex-col justify-between overflow-x-hidden select-none font-sans">
+      {/* High-Fidelity MeshGradient Shader Background adapted to DesaWatt theme */}
+      <DesaWattShaderBackground />
+
       {/* Top Navbar */}
-      <header className="relative z-20 px-6 sm:px-10 py-5 flex items-center justify-between border-b border-white/[0.08] backdrop-blur-md bg-black/[0.2]">
+      <header className="relative z-20 px-6 sm:px-10 py-5 flex items-center justify-between border-b border-white/[0.08] backdrop-blur-md bg-black/[0.25]">
         <div className="flex items-center gap-3">
           <span className="w-2.5 h-2.5 rounded-full bg-[#34D399] shadow-[0_0_10px_#34D399] animate-pulse" />
           <span className="text-[12px] font-extrabold tracking-wider text-slate-200 uppercase">
@@ -96,7 +85,7 @@ export const LoginPage: React.FC = () => {
 
             {/* 3 Value Proposition Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
-              <div className="p-4 rounded-2xl bg-black/[0.3] border border-white/15 backdrop-blur-xl space-y-1 hover:border-[#34D399]/60 transition-all shadow-lg">
+              <div className="p-4 rounded-2xl bg-black/[0.4] border border-white/15 backdrop-blur-xl space-y-1 hover:border-[#34D399]/60 transition-all shadow-lg">
                 <div className="w-8 h-8 rounded-lg bg-[#147A4B]/30 text-[#34D399] flex items-center justify-center font-bold mb-2">
                   <span className="material-symbols-outlined text-[18px]">fact_check</span>
                 </div>
@@ -106,7 +95,7 @@ export const LoginPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-black/[0.3] border border-white/15 backdrop-blur-xl space-y-1 hover:border-[#F5A623]/60 transition-all shadow-lg">
+              <div className="p-4 rounded-2xl bg-black/[0.4] border border-white/15 backdrop-blur-xl space-y-1 hover:border-[#F5A623]/60 transition-all shadow-lg">
                 <div className="w-8 h-8 rounded-lg bg-[#F5A623]/30 text-[#F5A623] flex items-center justify-center font-bold mb-2">
                   <span className="material-symbols-outlined text-[18px]">tune</span>
                 </div>
@@ -116,7 +105,7 @@ export const LoginPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-black/[0.3] border border-white/15 backdrop-blur-xl space-y-1 hover:border-[#34D399]/60 transition-all shadow-lg">
+              <div className="p-4 rounded-2xl bg-black/[0.4] border border-white/15 backdrop-blur-xl space-y-1 hover:border-[#34D399]/60 transition-all shadow-lg">
                 <div className="w-8 h-8 rounded-lg bg-[#147A4B]/30 text-[#34D399] flex items-center justify-center font-bold mb-2">
                   <span className="material-symbols-outlined text-[18px]">shield</span>
                 </div>
@@ -128,7 +117,7 @@ export const LoginPage: React.FC = () => {
             </div>
 
             {/* Live Microgrid Badge Status */}
-            <div className="p-4 rounded-2xl bg-black/[0.35] border border-[#147A4B]/40 backdrop-blur-xl flex items-center justify-between gap-4 shadow-xl">
+            <div className="p-4 rounded-2xl bg-black/[0.45] border border-[#147A4B]/40 backdrop-blur-xl flex items-center justify-between gap-4 shadow-xl">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#147A4B] text-white flex items-center justify-center font-bold shrink-0 shadow-[0_0_15px_rgba(20,122,75,0.6)]">
                   <span className="material-symbols-outlined text-[22px]">solar_power</span>
@@ -150,7 +139,7 @@ export const LoginPage: React.FC = () => {
 
           {/* RIGHT COLUMN: Interactive Login Panel with Clean Animated Logo Mark */}
           <div className="lg:col-span-5">
-            <div className="w-full bg-black/[0.4] backdrop-blur-2xl border border-white/[0.18] rounded-3xl p-7 sm:p-9 shadow-[0_25px_70px_rgba(0,0,0,0.7)] relative overflow-hidden">
+            <div className="w-full bg-black/[0.5] backdrop-blur-2xl border border-white/[0.18] rounded-3xl p-7 sm:p-9 shadow-[0_25px_70px_rgba(0,0,0,0.7)] relative overflow-hidden">
               
               {/* Success Flash Wave upon Login */}
               <AnimatePresence>
@@ -408,6 +397,6 @@ export const LoginPage: React.FC = () => {
           <span>DesaWatt © 2026</span>
         </div>
       </footer>
-    </BackgroundGradientAnimation>
+    </div>
   );
 };

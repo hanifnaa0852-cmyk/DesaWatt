@@ -25,7 +25,7 @@ function MainApp() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F6F8F7] text-[#131B2E] flex">
+    <div className="min-h-screen bg-[#F6F8F7] text-[#334155] flex relative overflow-x-hidden selection:bg-[#147A4B] selection:text-white font-sans">
       {/* Fixed Left Sidebar */}
       <Sidebar />
 
@@ -33,7 +33,7 @@ function MainApp() {
       <div className="pl-[260px] flex-1 flex flex-col min-h-screen">
         <TopBar />
 
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 lg:p-8">
           {activePage === 'beranda' && <Beranda />}
           {activePage === 'baca-desa' && <BacaDesa />}
           {activePage === 'rancang-watt' && <RancangWatt />}

@@ -40,24 +40,24 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-[260px] bg-white border-r border-slate-200 z-50 flex flex-col justify-between select-none">
+    <aside className="fixed left-0 top-0 h-screen w-[260px] bg-white border-r border-[#E2E8F0] z-50 flex flex-col justify-between select-none shadow-[2px_0_8px_rgba(0,0,0,0.02)]">
       <div className="flex flex-col flex-1 min-h-0">
         {/* Brand Header */}
-        <div className="h-16 px-4 flex items-center gap-3 border-b border-slate-100 shrink-0">
-          <DesaWattLogoMark size={36} className="shadow-xs shrink-0" />
+        <div className="h-16 px-5 flex items-center gap-3 border-b border-[#E2E8F0] shrink-0">
+          <DesaWattLogoMark size={34} className="shrink-0" />
           <div className="flex flex-col min-w-0">
-            <span className="text-[17px] font-extrabold leading-tight text-[#131B2E] tracking-tight truncate">
+            <span className="text-[17px] font-black leading-tight text-[#0F172A] tracking-tight truncate">
               DesaWatt
             </span>
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">
+            <span className="text-[11px] font-bold text-[#147A4B] uppercase tracking-wider truncate">
               PLTS Komunal Desa
             </span>
           </div>
         </div>
 
         {/* Section title */}
-        <div className="px-4 pt-4 pb-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+        <div className="px-5 pt-5 pb-2">
+          <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#64748B]">
             Menu Navigasi
           </span>
         </div>
@@ -70,16 +70,16 @@ export const Sidebar: React.FC = () => {
               <button
                 key={item.id}
                 onClick={() => setActivePage(item.id)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all text-left font-medium text-[14px] ${
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all text-left font-bold text-[14px] cursor-pointer ${
                   isActive
-                    ? 'bg-[#147A4B] text-white font-semibold shadow-sm'
-                    : 'text-slate-600 hover:bg-[#F2F3FF] hover:text-[#131B2E]'
+                    ? 'bg-[#147A4B] text-white shadow-sm'
+                    : 'text-[#334155] hover:bg-[#F1F5F9] hover:text-[#0F172A]'
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <span
                     className={`material-symbols-outlined text-[20px] ${
-                      isActive ? 'text-white' : item.isGate ? 'text-[#835500]' : 'text-slate-500'
+                      isActive ? 'text-white' : item.isGate ? 'text-[#F5A623]' : 'text-[#64748B]'
                     }`}
                   >
                     {item.icon}
@@ -88,12 +88,12 @@ export const Sidebar: React.FC = () => {
                 </div>
                 {item.badge && (
                   <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0 ${
+                    className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider shrink-0 ${
                       isActive
                         ? 'bg-white/20 text-white'
                         : item.isGate
-                        ? 'bg-[#FEF6E9] text-[#835500]'
-                        : 'bg-slate-100 text-slate-500'
+                        ? 'bg-[#FFF4DC] text-[#B45309] border border-[#FDE68A]'
+                        : 'bg-[#E8F5EE] text-[#147A4B]'
                     }`}
                   >
                     {item.badge}
@@ -106,29 +106,29 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Bottom system status cards */}
-      <div className="p-3 border-t border-slate-100 shrink-0 space-y-2">
-        <div className="bg-[#F8FAFC] p-2.5 rounded-xl border border-slate-200/80 flex items-center justify-between">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="w-2 h-2 rounded-full bg-[#22A06B] animate-pulse shrink-0"></span>
+      <div className="p-3.5 border-t border-[#E2E8F0] shrink-0 space-y-2">
+        <div className="bg-[#E8F5EE] p-3 rounded-xl border border-[#C6E7D5] flex items-center justify-between">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#22A06B] animate-pulse shrink-0 shadow-sm"></span>
             <div className="flex flex-col min-w-0">
-              <span className="text-[12px] font-semibold text-[#131B2E] truncate">
+              <span className="text-[12px] font-bold text-[#0F172A] truncate">
                 Server Pusat
               </span>
-              <span className="text-[10px] text-slate-500 truncate">Sinkronisasi Realtime</span>
+              <span className="text-[10px] text-[#147A4B] font-semibold truncate">Sinkronisasi Realtime</span>
             </div>
           </div>
-          <span className="material-symbols-outlined text-slate-400 text-[18px]">cloud_done</span>
+          <span className="material-symbols-outlined text-[#147A4B] text-[18px]">cloud_done</span>
         </div>
 
-        <div className="bg-[#EBF7F1]/50 p-2.5 rounded-xl border border-[#C1E7D4] flex items-start gap-2.5">
+        <div className="bg-[#E8F5EE] p-3 rounded-xl border border-[#C6E7D5] flex items-start gap-2.5">
           <span className="material-symbols-outlined text-[#147A4B] text-[18px] shrink-0 mt-0.5">
             support_agent
           </span>
           <div className="flex flex-col min-w-0">
-            <span className="text-[12px] font-semibold text-[#131B2E] truncate">
+            <span className="text-[12px] font-bold text-[#0F172A] truncate">
               Bantuan Desa
             </span>
-            <span className="text-[10px] text-slate-600 truncate">
+            <span className="text-[10px] text-[#334155] font-medium truncate">
               Pendamping Siap Bantu
             </span>
           </div>
