@@ -2,6 +2,14 @@ export type VillageId = 'sumber-makmur' | 'tirta-mukti' | 'karang-asri';
 
 export type ReadinessLevel = 'Rendah' | 'Menengah' | 'Tinggi';
 
+export type AppPage =
+  | 'beranda'
+  | 'baca-desa'
+  | 'rancang-watt'
+  | 'gerbang-keputusan'
+  | 'jaga-watt'
+  | 'ringkasan-wilayah';
+
 export type ManagementModel = 'milik_koperasi' | 'kemitraan' | 'eaas';
 
 export type IndicatorKey =

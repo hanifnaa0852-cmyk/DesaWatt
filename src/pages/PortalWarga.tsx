@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDesaWatt } from '../context/DesaWattContext';
 import { DesaWattLogoMark } from '../components/DesaWattLogoMark';
 import { GlowingMetricCard } from '@/components/ui/GlowingMetricCard';
+import { CountUpNumber } from '@/components/ui/CountUpNumber';
 
 export const PortalWarga: React.FC = () => {
   const { activeVillage, setIsPublicPortal, citizenReports, addCitizenReport } = useDesaWatt();
@@ -40,7 +41,7 @@ export const PortalWarga: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#E4E8D6] text-[#3A4728] flex flex-col justify-between selection:bg-[#4B5D2A] selection:text-[#F7F8EE]">
       {/* Standalone Public Header (No Sidebar) in Army Theme */}
-      <header className="sticky top-0 z-50 bg-[#F3F5EA] border-b border-[#C5CCAE] px-6 h-18 flex items-center justify-between shadow-xs">
+      <header className="sticky top-0 z-50 bg-[#F3F5EA] border-b border-[#C5CCAE] px-4 sm:px-6 py-2.5 min-h-16 flex flex-wrap items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-3">
           <div className="p-1 rounded-xl bg-[#FAFBF4] border border-[#C5CCAE] shadow-xs flex items-center justify-center">
             <DesaWattLogoMark size={36} className="shrink-0" />
@@ -80,7 +81,7 @@ export const PortalWarga: React.FC = () => {
       </header>
 
       {/* Main Public Content */}
-      <main className="max-w-7xl mx-auto w-full px-6 py-8 space-y-6 flex-1">
+      <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 space-y-6 flex-1 min-w-0">
         {/* Civic Announcement Banner in Army Green Gradient */}
         <div className="rounded-[14px] bg-gradient-to-r from-[#4B5D2A] via-[#556930] to-[#5E7336] border border-[#5E7336] p-6 shadow-md text-[#F7F8EE] flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5">
@@ -129,14 +130,14 @@ export const PortalWarga: React.FC = () => {
         </div>
 
         {/* 4 Telemetry Spec Badges with Glowing Effect */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 min-[1100px]:grid-cols-4 gap-4 w-full min-w-0">
           <GlowingMetricCard>
             <div className="p-4.5 flex flex-col justify-between h-full">
               <span className="text-[11px] font-bold text-[#6B7753] uppercase block">
                 Kapasitas Array Surya
               </span>
               <div className="text-[24px] font-black text-[#1F2A14] mt-0.5">
-                {activeVillage.capacityKwp} kWp
+                <CountUpNumber value={activeVillage.capacityKwp} /> kWp
               </div>
               <span className="text-[11px] text-[#4C9A52] font-bold">140 Modul Monokristalin</span>
             </div>
@@ -148,7 +149,7 @@ export const PortalWarga: React.FC = () => {
                 Sambungan Terlayani
               </span>
               <div className="text-[24px] font-black text-[#1F2A14] mt-0.5">
-                {activeVillage.connectionsKK} KK
+                <CountUpNumber value={activeVillage.connectionsKK} /> KK
               </div>
               <span className="text-[11px] text-[#3A4728] font-semibold">+ Usaha & Fasum Desa</span>
             </div>
@@ -160,9 +161,11 @@ export const PortalWarga: React.FC = () => {
                 Penyimpanan Baterai
               </span>
               <div className="text-[24px] font-black text-[#1F2A14] mt-0.5">
-                {activeVillage.batteryKwh} kWh
+                <CountUpNumber value={activeVillage.batteryKwh} /> kWh
               </div>
-              <span className="text-[11px] text-[#4C9A52] font-bold">SOC Saat Ini: 91% (Penuh)</span>
+              <span className="text-[11px] text-[#4C9A52] font-bold">
+                SOC Saat Ini: <CountUpNumber value={91} />% (Penuh)
+              </span>
             </div>
           </GlowingMetricCard>
 
@@ -171,16 +174,18 @@ export const PortalWarga: React.FC = () => {
               <span className="text-[11px] font-bold text-[#6B7753] uppercase block">
                 Keandalan (Uptime)
               </span>
-              <div className="text-[24px] font-black text-[#1F2A14] mt-0.5">99.4%</div>
+              <div className="text-[24px] font-black text-[#1F2A14] mt-0.5">
+                <CountUpNumber value={99.4} decimals={1} />%
+              </div>
               <span className="text-[11px] text-[#4C9A52] font-bold">Bebas Pemadaman Massal</span>
             </div>
           </GlowingMetricCard>
         </div>
 
         {/* 3 Main Desktop Dashboard Columns */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Column 1: Produksi Harian (4 cols) */}
-          <div className="lg:col-span-4 bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs space-y-4">
+        <div className="grid grid-cols-1 min-[1100px]:grid-cols-3 gap-6 items-start w-full min-w-0">
+          {/* Column 1: Produksi Harian */}
+          <div className="bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs space-y-4 w-full min-w-0">
             <div className="flex items-center justify-between">
               <h3 className="text-[16px] font-extrabold text-[#1F2A14]">
                 Produksi Surya Hari Ini
@@ -196,24 +201,24 @@ export const PortalWarga: React.FC = () => {
                   Total Energi Masuk
                 </span>
                 <div className="text-[36px] font-black text-[#1F2A14] tracking-tight">
-                  {activeVillage.productionTodayKwh}{' '}
+                  <CountUpNumber value={activeVillage.productionTodayKwh} />{' '}
                   <span className="text-[16px] text-[#6B7753] font-semibold">kWh</span>
                 </div>
                 <span className="text-[12px] text-[#4C9A52] font-bold">
-                  88.7% dari target harian (160 kWh)
+                  <CountUpNumber value={88.7} decimals={1} />% dari target harian (160 kWh)
                 </span>
               </div>
 
               {/* Mini Gauge */}
               <div className="w-20 h-20 rounded-full border-4 border-[#4B5D2A] border-t-[#D3D9BE] flex flex-col items-center justify-center font-black text-[15px] text-[#4B5D2A] bg-[#FAFBF4]">
-                88.7%
+                <CountUpNumber value={88.7} decimals={1} />%
                 <span className="text-[8px] text-[#6B7753] font-bold uppercase">Tercapai</span>
               </div>
             </div>
 
             <div className="p-3 bg-[#FAFBF4] rounded-xl text-[12px] text-[#3A4728] leading-relaxed border border-[#C5CCAE]">
               <strong className="text-[#1F2A14]">Daya tersimpan cukup</strong> untuk menyalakan
-              seluruh {activeVillage.connectionsKK} KK dan penerangan jalan hingga fajar esok hari.
+              seluruh <CountUpNumber value={activeVillage.connectionsKK} /> KK dan penerangan jalan hingga fajar esok hari.
             </div>
 
             {/* Environmental badges */}
@@ -222,24 +227,30 @@ export const PortalWarga: React.FC = () => {
                 <span className="text-[10px] font-bold text-[#6B7753] uppercase block">
                   Emisi Terhindar <span className="italic">(estimasi demo)</span>
                 </span>
-                <div className="text-[16px] font-black text-[#27602C]">214 kg CO₂</div>
+                <div className="text-[16px] font-black text-[#27602C]">
+                  <CountUpNumber value={214} /> kg CO₂
+                </div>
               </div>
               <div className="p-3 bg-[#F6E7BD] rounded-xl border border-[#EED38A]">
                 <span className="text-[10px] font-bold text-[#6B7753] uppercase block">
                   Solar Dihemat <span className="italic">(estimasi demo)</span>
                 </span>
-                <div className="text-[16px] font-black text-[#825708]">78 Liter</div>
+                <div className="text-[16px] font-black text-[#825708]">
+                  <CountUpNumber value={78} /> Liter
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Column 2: Alokasi Beban Aktif Desa (4 cols) */}
-          <div className="lg:col-span-4 bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs space-y-4">
+          {/* Column 2: Alokasi Beban Aktif Desa */}
+          <div className="bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs space-y-4 w-full min-w-0">
             <div className="flex items-center justify-between">
               <h3 className="text-[16px] font-extrabold text-[#1F2A14]">
                 Alokasi Beban Aktif Desa
               </h3>
-              <span className="text-[11px] font-bold text-[#6B7753]">Total: 142 kWh</span>
+              <span className="text-[11px] font-bold text-[#6B7753]">
+                Total: <CountUpNumber value={142} /> kWh
+              </span>
             </div>
 
             <p className="text-[12px] text-[#3A4728] leading-relaxed">
@@ -250,10 +261,12 @@ export const PortalWarga: React.FC = () => {
             <div className="p-3 bg-[#FAFBF4] rounded-xl space-y-1.5 border border-[#C5CCAE]">
               <div className="flex justify-between items-center text-[12px] font-bold">
                 <span className="text-[#1F2A14]">Rumah Tangga ({activeVillage.connectionsKK} KK)</span>
-                <span className="text-[#4C9A52] font-black">68% (96.5 kWh)</span>
+                <span className="text-[#4C9A52] font-black">
+                  <CountUpNumber value={68} />% (<CountUpNumber value={96.5} decimals={1} /> kWh)
+                </span>
               </div>
               <div className="w-full bg-[#D3D9BE] h-2 rounded-full overflow-hidden">
-                <div className="bg-[#4B5D2A] h-full rounded-full" style={{ width: '68%' }}></div>
+                <div className="bg-[#4B5D2A] h-full rounded-full transition-all duration-700" style={{ width: '68%' }}></div>
               </div>
               <span className="text-[10px] text-[#6B7753] block">Rata-rata 400 Wh / rumah</span>
             </div>
@@ -262,10 +275,12 @@ export const PortalWarga: React.FC = () => {
             <div className="p-3 bg-[#FAFBF4] rounded-xl space-y-1.5 border border-[#C5CCAE]">
               <div className="flex justify-between items-center text-[12px] font-bold">
                 <span className="text-[#1F2A14]">Cold Storage Nelayan & Sayur</span>
-                <span className="text-[#D99A1E] font-black">21% (29.8 kWh)</span>
+                <span className="text-[#D99A1E] font-black">
+                  <CountUpNumber value={21} />% (<CountUpNumber value={29.8} decimals={1} /> kWh)
+                </span>
               </div>
               <div className="w-full bg-[#D3D9BE] h-2 rounded-full overflow-hidden">
-                <div className="bg-[#E0A526] h-full rounded-full" style={{ width: '21%' }}></div>
+                <div className="bg-[#E0A526] h-full rounded-full transition-all duration-700" style={{ width: '21%' }}></div>
               </div>
               <span className="text-[10px] text-[#6B7753] block">Suhu stabil -2.4°C</span>
             </div>
@@ -274,17 +289,19 @@ export const PortalWarga: React.FC = () => {
             <div className="p-3 bg-[#FAFBF4] rounded-xl space-y-1.5 border border-[#C5CCAE]">
               <div className="flex justify-between items-center text-[12px] font-bold">
                 <span className="text-[#1F2A14]">Pabrik Es & Penggilingan Padi</span>
-                <span className="text-[#6B7753] font-black">11% (15.7 kWh)</span>
+                <span className="text-[#6B7753] font-black">
+                  <CountUpNumber value={11} />% (<CountUpNumber value={15.7} decimals={1} /> kWh)
+                </span>
               </div>
               <div className="w-full bg-[#D3D9BE] h-2 rounded-full overflow-hidden">
-                <div className="bg-[#6B7753] h-full rounded-full" style={{ width: '11%' }}></div>
+                <div className="bg-[#6B7753] h-full rounded-full transition-all duration-700" style={{ width: '11%' }}></div>
               </div>
               <span className="text-[10px] text-[#6B7753] block">Jam produktif: 09:00 - 15:00</span>
             </div>
           </div>
 
-          {/* Column 3: Iuran & Dana O&M (4 cols) */}
-          <div className="lg:col-span-4 bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs space-y-4">
+          {/* Column 3: Iuran & Dana O&M */}
+          <div className="bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs space-y-4 w-full min-w-0">
             <div className="flex items-center justify-between">
               <h3 className="text-[16px] font-extrabold text-[#1F2A14]">Iuran & Dana O&M</h3>
               <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-[#E4E8D6] text-[#4B5D2A] border border-[#C5CCAE]">
@@ -299,17 +316,17 @@ export const PortalWarga: React.FC = () => {
                   Iuran Bulan Berjalan
                 </span>
                 <span className="text-[16px] font-black text-[#4C9A52]">
-                  {activeVillage.collectionRatePercent}% Terkumpul
+                  <CountUpNumber value={activeVillage.collectionRatePercent} />% Terkumpul
                 </span>
               </div>
               <div className="w-full bg-[#D3D9BE] h-2 rounded-full overflow-hidden">
                 <div
-                  className="bg-[#4B5D2A] h-full rounded-full"
+                  className="bg-[#4B5D2A] h-full rounded-full transition-all duration-700"
                   style={{ width: `${activeVillage.collectionRatePercent}%` }}
                 ></div>
               </div>
               <span className="text-[11px] text-[#6B7753] block">
-                206 dari {activeVillage.connectionsKK} KK Lunas (Rp 75.000 / KK)
+                <CountUpNumber value={206} /> dari <CountUpNumber value={activeVillage.connectionsKK} /> KK Lunas (Rp <CountUpNumber value={75000} /> / KK)
               </span>
             </div>
 
@@ -319,7 +336,7 @@ export const PortalWarga: React.FC = () => {
                 Saldo Dana O&M
               </span>
               <div className="text-[22px] font-black text-[#1F2A14] mt-0.5">
-                Rp {activeVillage.saldoDanaOMJuta}.000.000
+                Rp <CountUpNumber value={activeVillage.saldoDanaOMJuta} />.000.000
               </div>
               <span className="text-[11px] text-[#4C9A52] font-semibold block mt-0.5">
                 Tersedia untuk suku cadang, kabel, & honor teknisi lokal
@@ -330,13 +347,15 @@ export const PortalWarga: React.FC = () => {
             <div className="p-3.5 bg-[#F6E7BD] border border-[#EED38A] rounded-xl space-y-1.5">
               <div className="flex justify-between items-center text-[12px] font-bold text-[#825708]">
                 <span>Alokasi Cadangan Penggantian Baterai</span>
-                <span>25,5%</span>
+                <span>
+                  <CountUpNumber value={25.5} decimals={1} />%
+                </span>
               </div>
               <div className="w-full bg-[#EED38A] h-2 rounded-full overflow-hidden">
-                <div className="bg-[#E0A526] h-full rounded-full" style={{ width: '25.5%' }}></div>
+                <div className="bg-[#E0A526] h-full rounded-full transition-all duration-700" style={{ width: '25.5%' }}></div>
               </div>
               <p className="text-[11px] text-[#7A4F06] leading-tight">
-                Dari Dana O&M Rp{activeVillage.saldoDanaOMJuta} Jt, 25,5% dari target penggantian baterai Rp{activeVillage.targetBatteryFundJuta} Jt
+                Dari Dana O&M Rp <CountUpNumber value={activeVillage.saldoDanaOMJuta} /> Jt, 25,5% dari target penggantian baterai Rp <CountUpNumber value={activeVillage.targetBatteryFundJuta} /> Jt
               </p>
             </div>
 
@@ -361,7 +380,7 @@ export const PortalWarga: React.FC = () => {
         </div>
 
         {/* Civic Reporting & User Submissions List */}
-        <div className="bg-[#F3F5EA] rounded-[14px] p-6 border border-[#C5CCAE] shadow-xs space-y-5">
+        <div className="bg-[#F3F5EA] rounded-[14px] p-4 sm:p-6 border border-[#C5CCAE] shadow-xs space-y-5 w-full min-w-0">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#C5CCAE]">
             <div>
               <h3 className="text-[18px] font-extrabold text-[#1F2A14]">
@@ -384,7 +403,7 @@ export const PortalWarga: React.FC = () => {
           {/* List of citizen reports */}
           <div className="space-y-3">
             <span className="text-[12px] font-bold uppercase tracking-wider text-[#6B7753] block">
-              Daftar Laporan Warga Terkini ({citizenReports.length})
+              Daftar Laporan Warga Terkini (<CountUpNumber value={citizenReports.length} />)
             </span>
 
             {citizenReports.map((rep) => (

@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
 import {
   VillageId,
   ReadinessLevel,
+  AppPage,
   ManagementModel,
   IndicatorKey,
   IndicatorConfig,
@@ -246,6 +247,8 @@ interface DesaWattContextType {
   activeVillage: VillageData;
   villages: Record<VillageId, VillageData>;
   updateIndicator: (villageId: VillageId, key: IndicatorKey, value: 5 | 10 | 15) => void;
+  batchUpdateIndicators: (villageId: VillageId, updates: Partial<Record<IndicatorKey, 5 | 10 | 15>>) => void;
+  simulationResetKey: number;
   totalScore: number;
   readinessLevel: ReadinessLevel;
   recommendedModel: ManagementModel;
@@ -254,8 +257,8 @@ interface DesaWattContextType {
   effectiveModel: ManagementModel;
   isModelMismatch: boolean;
   lowestIndicators: IndicatorConfig[];
-  activePage: 'beranda' | 'baca-desa' | 'rancang-watt' | 'gerbang-keputusan' | 'jaga-watt';
-  setActivePage: (page: 'beranda' | 'baca-desa' | 'rancang-watt' | 'gerbang-keputusan' | 'jaga-watt') => void;
+  activePage: AppPage;
+  setActivePage: (page: AppPage) => void;
   isPublicPortal: boolean;
   setIsPublicPortal: (isPublic: boolean) => void;
   // Gate checklist states per village
@@ -299,6 +302,10 @@ interface DesaWattContextType {
   isTourOpen: boolean;
   setIsTourOpen: (open: boolean) => void;
   startTour: () => void;
+  // Sidebar Responsive Collapse
+  isSidebarCollapsed: boolean;
+  setIsSidebarCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+  toggleSidebar: () => void;
   // Reset
   resetDemoData: () => void;
 }
@@ -308,10 +315,11 @@ const DesaWattContext = createContext<DesaWattContextType | null>(null);
 export function DesaWattProvider({ children }: { children: React.ReactNode }) {
   const [selectedVillageId, setSelectedVillageId] = useState<VillageId>('sumber-makmur');
   const [villages, setVillages] = useState<Record<VillageId, VillageData>>(INITIAL_VILLAGES);
-  const [activePage, setActivePage] = useState<'beranda' | 'baca-desa' | 'rancang-watt' | 'gerbang-keputusan' | 'jaga-watt'>('beranda');
+  const [activePage, setActivePage] = useState<AppPage>('beranda');
   const [isPublicPortal, setIsPublicPortal] = useState<boolean>(false);
   const [selectedModelOverride, setSelectedModelOverride] = useState<ManagementModel | null>(null);
   const [citizenReports, setCitizenReports] = useState<CitizenReport[]>(INITIAL_REPORTS);
+  const [simulationResetKey, setSimulationResetKey] = useState<number>(0);
 
   // Authentication state (Default to false so login page appears on initial load)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -322,6 +330,29 @@ export function DesaWattProvider({ children }: { children: React.ReactNode }) {
   });
 
   const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
+
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 1100;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1100) {
+        setIsSidebarCollapsed(true);
+      } else {
+        setIsSidebarCollapsed(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed((prev) => !prev);
+  };
 
   const startTour = () => {
     setIsTourOpen(true);
@@ -605,6 +636,22 @@ export function DesaWattProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
+  const batchUpdateIndicators = (
+    villageId: VillageId,
+    updates: Partial<Record<IndicatorKey, 5 | 10 | 15>>
+  ) => {
+    setVillages((prev) => ({
+      ...prev,
+      [villageId]: {
+        ...prev[villageId],
+        indicators: {
+          ...prev[villageId].indicators,
+          ...updates,
+        },
+      },
+    }));
+  };
+
   const addCitizenReport = (report: Omit<CitizenReport, 'id' | 'timestamp' | 'status'>) => {
     const newReport: CitizenReport = {
       ...report,
@@ -622,6 +669,7 @@ export function DesaWattProvider({ children }: { children: React.ReactNode }) {
     setMusdesApproved(false);
     setPendampingAssigned(true);
     setCitizenReports(INITIAL_REPORTS);
+    setSimulationResetKey((k) => k + 1);
   };
 
   return (
@@ -632,6 +680,8 @@ export function DesaWattProvider({ children }: { children: React.ReactNode }) {
         activeVillage,
         villages,
         updateIndicator,
+        batchUpdateIndicators,
+        simulationResetKey,
         totalScore,
         readinessLevel,
         recommendedModel,
@@ -667,6 +717,9 @@ export function DesaWattProvider({ children }: { children: React.ReactNode }) {
         isTourOpen,
         setIsTourOpen,
         startTour,
+        isSidebarCollapsed,
+        setIsSidebarCollapsed,
+        toggleSidebar,
         resetDemoData,
       }}
     >

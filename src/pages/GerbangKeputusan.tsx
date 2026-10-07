@@ -1,6 +1,7 @@
 import React from 'react';
 import { useDesaWatt } from '../context/DesaWattContext';
 import { GlowingMetricCard } from '@/components/ui/GlowingMetricCard';
+import { CountUpNumber } from '@/components/ui/CountUpNumber';
 
 export const GerbangKeputusan: React.FC = () => {
   const {
@@ -34,9 +35,9 @@ export const GerbangKeputusan: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col gap-6 max-w-7xl mx-auto pb-12 text-[#3A4728]">
+    <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto pb-12 text-[#3A4728] min-w-0">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 w-full min-w-0">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#E4E8D6] text-[#4B5D2A] border border-[#C5CCAE]">
@@ -71,7 +72,7 @@ export const GerbangKeputusan: React.FC = () => {
       </div>
 
       {/* Horizontal Pipeline Track */}
-      <div className="rounded-[14px] bg-[#F3F5EA] border border-[#C5CCAE] p-6 shadow-xs overflow-x-auto">
+      <div className="rounded-[14px] bg-[#F3F5EA] border border-[#C5CCAE] p-4 sm:p-6 shadow-xs overflow-x-auto w-full min-w-0">
         <div className="flex items-center justify-between min-w-[850px] relative">
           {/* Track line */}
           <div className="absolute left-8 right-8 top-5 h-1 bg-[#D3D9BE] -z-0"></div>
@@ -90,7 +91,7 @@ export const GerbangKeputusan: React.FC = () => {
             </span>
             <span className="text-[13px] font-bold text-[#1F2A14]">Skor Baca Desa</span>
             <span className="mt-1 px-2 py-0.5 rounded-full bg-[#E4E8D6] text-[#4B5D2A] text-[11px] font-extrabold border border-[#C5CCAE]">
-              {totalScore} / 120 ({readinessLevel})
+              <CountUpNumber value={totalScore} /> / 120 ({readinessLevel})
             </span>
           </div>
 
@@ -118,7 +119,7 @@ export const GerbangKeputusan: React.FC = () => {
             </span>
             <span className="text-[13px] font-bold text-[#1F2A14]">Arus Kas & O&M</span>
             <span className="mt-1 px-2 py-0.5 rounded-full bg-[#E4E8D6] text-[#4B5D2A] text-[11px] font-extrabold border border-[#C5CCAE]">
-              +Rp {simulationResults.netAnnualAverageJuta.toLocaleString('id-ID')} Jt/thn
+              +Rp <CountUpNumber value={simulationResults.netAnnualAverageJuta} /> Jt/thn
             </span>
           </div>
 
@@ -132,7 +133,7 @@ export const GerbangKeputusan: React.FC = () => {
             </span>
             <span className="text-[14px] font-extrabold text-[#1F2A14]">Gerbang Keputusan</span>
             <span className="mt-1 px-2.5 py-0.5 rounded-full bg-[#F6E7BD] text-[#825708] text-[11px] font-extrabold border border-[#EED38A]">
-              Validasi ({gateChecklist.passedCount}/{gateChecklist.totalCount})
+              Validasi (<CountUpNumber value={gateChecklist.passedCount} />/<CountUpNumber value={gateChecklist.totalCount} />)
             </span>
           </div>
 
@@ -173,9 +174,9 @@ export const GerbangKeputusan: React.FC = () => {
       </div>
 
       {/* Main Two-Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 min-[1100px]:grid-cols-12 gap-6 items-start w-full min-w-0">
         {/* Left Column: 5 Verification Checklist (8 cols) */}
-        <div className="lg:col-span-8 space-y-6">
+        <div className="min-[1100px]:col-span-8 space-y-6 w-full min-w-0">
           <div className="rounded-[14px] bg-[#F3F5EA] border border-[#C5CCAE] p-6 shadow-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#C5CCAE] gap-2 mb-4">
               <div>
@@ -193,12 +194,12 @@ export const GerbangKeputusan: React.FC = () => {
               <div className="flex items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E2F0E4] text-[#27602C] text-[12px] font-extrabold border border-[#C2E0C5]">
                   <span className="w-2 h-2 rounded-full bg-[#4C9A52]"></span>{' '}
-                  {gateChecklist.passedCount} Lulus
+                  <CountUpNumber value={gateChecklist.passedCount} /> Lulus
                 </span>
                 {gateChecklist.totalCount - gateChecklist.passedCount > 0 && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F6E7BD] text-[#825708] text-[12px] font-extrabold border border-[#EED38A]">
                     <span className="w-2 h-2 rounded-full bg-[#D99A1E]"></span>{' '}
-                    {gateChecklist.totalCount - gateChecklist.passedCount} Menunggu
+                    <CountUpNumber value={gateChecklist.totalCount - gateChecklist.passedCount} /> Menunggu
                   </span>
                 )}
               </div>
@@ -236,14 +237,17 @@ export const GerbangKeputusan: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-[12px] text-[#3A4728] mt-1 leading-relaxed">
-                      Skor perolehan <strong className="text-[#1F2A14]">{totalScore} / 120</strong>{' '}
+                      Skor perolehan{' '}
+                      <strong className="text-[#1F2A14]">
+                        <CountUpNumber value={totalScore} /> / 120
+                      </strong>{' '}
                       (Level {readinessLevel}). Ambang minimum model {getModelLabel(effectiveModel)}:
                       skor ≥ {effectiveModel === 'milik_koperasi' ? 91 : 61} poin.
                     </p>
                   </div>
                 </div>
                 <div className="shrink-0 text-right text-[11px] font-semibold text-[#6B7753]">
-                  Bobot: 25%
+                  Bobot: <CountUpNumber value={25} />%
                 </div>
               </div>
 
@@ -277,12 +281,12 @@ export const GerbangKeputusan: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-[12px] text-[#3A4728] mt-1 leading-relaxed">
-                      SOP iuran warga disepakati dengan Saldo Dana O&M Rp {activeVillage.saldoDanaOMJuta}.000.000 di rekening penampung.
+                      SOP iuran warga disepakati dengan Saldo Dana O&M Rp <CountUpNumber value={activeVillage.saldoDanaOMJuta} />.000.000 di rekening penampung.
                     </p>
                   </div>
                 </div>
                 <div className="shrink-0 text-right text-[11px] font-semibold text-[#6B7753]">
-                  Bobot: 20%
+                  Bobot: <CountUpNumber value={20} />%
                 </div>
               </div>
 
@@ -316,12 +320,17 @@ export const GerbangKeputusan: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-[12px] text-[#3A4728] mt-1 leading-relaxed">
-                      Dari Dana O&M Rp {activeVillage.saldoDanaOMJuta} Jt, {((activeVillage.saldoDanaOMJuta / activeVillage.targetBatteryFundJuta) * 100).toFixed(1)}% dari target penggantian baterai Rp {activeVillage.targetBatteryFundJuta} Jt teralokasi dengan mekanisme rekening escrow dual-signature (Dinas/Pendamping + Koperasi).
+                      Dari Dana O&M Rp <CountUpNumber value={activeVillage.saldoDanaOMJuta} /> Jt,{' '}
+                      <CountUpNumber
+                        value={Number(((activeVillage.saldoDanaOMJuta / activeVillage.targetBatteryFundJuta) * 100).toFixed(1))}
+                        decimals={1}
+                      />
+                      % dari target penggantian baterai Rp <CountUpNumber value={activeVillage.targetBatteryFundJuta} /> Jt teralokasi dengan mekanisme rekening escrow dual-signature (Dinas/Pendamping + Koperasi).
                     </p>
                   </div>
                 </div>
                 <div className="shrink-0 text-right text-[11px] font-semibold text-[#6B7753]">
-                  Bobot: 20%
+                  Bobot: <CountUpNumber value={20} />%
                 </div>
               </div>
 
@@ -389,7 +398,7 @@ export const GerbangKeputusan: React.FC = () => {
                     </div>
                   </div>
                   <div className="shrink-0 text-right text-[11px] font-semibold text-[#6B7753]">
-                    Bobot: 20%
+                    Bobot: <CountUpNumber value={20} />%
                   </div>
                 </div>
               </div>
@@ -458,7 +467,7 @@ export const GerbangKeputusan: React.FC = () => {
                     </div>
                   </div>
                   <div className="shrink-0 text-right text-[11px] font-semibold text-[#6B7753]">
-                    Bobot: 15%
+                    Bobot: <CountUpNumber value={15} />%
                   </div>
                 </div>
               </div>
@@ -471,12 +480,12 @@ export const GerbangKeputusan: React.FC = () => {
               <span className="material-symbols-outlined text-[#4B5D2A] text-[20px]">bolt</span>
               Ringkasan Spesifikasi Teknis yang Siap Diinstalasi
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 min-[1200px]:grid-cols-4 gap-3 w-full min-w-0">
               <GlowingMetricCard>
                 <div className="p-3.5 flex flex-col justify-between h-full">
                   <span className="text-[11px] font-bold text-[#6B7753] block">Kapasitas Puncak</span>
                   <span className="text-[18px] font-black text-[#1F2A14]">
-                    {activeVillage.capacityKwp} kWp
+                    <CountUpNumber value={activeVillage.capacityKwp} /> kWp
                   </span>
                   <span className="text-[10px] text-[#6B7753] block">Tier 1 Monokristalin</span>
                 </div>
@@ -486,7 +495,7 @@ export const GerbangKeputusan: React.FC = () => {
                 <div className="p-3.5 flex flex-col justify-between h-full">
                   <span className="text-[11px] font-bold text-[#6B7753] block">Penyimpanan Baterai</span>
                   <span className="text-[18px] font-black text-[#1F2A14]">
-                    {activeVillage.batteryKwh} kWh
+                    <CountUpNumber value={activeVillage.batteryKwh} /> kWh
                   </span>
                   <span className="text-[10px] text-[#6B7753] block">Lithium Ferro (LiFePO4)</span>
                 </div>
@@ -496,7 +505,7 @@ export const GerbangKeputusan: React.FC = () => {
                 <div className="p-3.5 flex flex-col justify-between h-full">
                   <span className="text-[11px] font-bold text-[#6B7753] block">Penerima Manfaat</span>
                   <span className="text-[18px] font-black text-[#1F2A14]">
-                    {activeVillage.connectionsKK} KK
+                    <CountUpNumber value={activeVillage.connectionsKK} /> KK
                   </span>
                   <span className="text-[10px] text-[#6B7753] block">+ Fasilitas Umum</span>
                 </div>
@@ -505,7 +514,9 @@ export const GerbangKeputusan: React.FC = () => {
               <GlowingMetricCard>
                 <div className="p-3.5 flex flex-col justify-between h-full">
                   <span className="text-[11px] font-bold text-[#6B7753] block">Kemandirian Energi</span>
-                  <span className="text-[18px] font-black text-[#4C9A52]">98.4%</span>
+                  <span className="text-[18px] font-black text-[#4C9A52]">
+                    <CountUpNumber value={98.4} decimals={1} />%
+                  </span>
                   <span className="text-[10px] text-[#6B7753] block">Microgrid Komunal</span>
                 </div>
               </GlowingMetricCard>
@@ -514,7 +525,7 @@ export const GerbangKeputusan: React.FC = () => {
         </div>
 
         {/* Right Column: Decision Authority Card (4 cols) */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className="min-[1100px]:col-span-4 space-y-6 w-full min-w-0">
           <div className="rounded-[14px] bg-[#F3F5EA] border border-[#C5CCAE] p-6 shadow-xs space-y-5">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B7753] block mb-1.5">
@@ -559,14 +570,14 @@ export const GerbangKeputusan: React.FC = () => {
                   Kelengkapan Syarat
                 </span>
                 <div className="text-[26px] font-black text-[#1F2A14]">
-                  {percentComplete}%{' '}
+                  <CountUpNumber value={percentComplete} />%{' '}
                   <span className="text-[13px] font-semibold text-[#6B7753]">
-                    ({gateChecklist.passedCount}/{gateChecklist.totalCount})
+                    (<CountUpNumber value={gateChecklist.passedCount} />/<CountUpNumber value={gateChecklist.totalCount} />)
                   </span>
                 </div>
               </div>
               <div className="w-12 h-12 rounded-full border-4 border-[#4B5D2A] border-t-[#D3D9BE] flex items-center justify-center font-bold text-[12px] text-[#4B5D2A]">
-                {gateChecklist.passedCount}/5
+                <CountUpNumber value={gateChecklist.passedCount} />/5
               </div>
             </div>
 
@@ -625,7 +636,7 @@ export const GerbangKeputusan: React.FC = () => {
       </div>
 
       {/* Benchmark Table for 3 Villages */}
-      <div className="rounded-[14px] bg-[#F3F5EA] border border-[#C5CCAE] p-6 shadow-xs">
+      <div className="rounded-[14px] bg-[#F3F5EA] border border-[#C5CCAE] p-6 shadow-xs w-full min-w-0">
         <h3 className="text-[16px] font-extrabold text-[#1F2A14] mb-3 flex items-center gap-2">
           <span className="material-symbols-outlined text-[#4B5D2A] text-[20px]">
             compare_arrows
@@ -633,8 +644,8 @@ export const GerbangKeputusan: React.FC = () => {
           Benchmark Komparasi Gerbang Keputusan & Status 3 Desa Binaan
         </h3>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-[13px]">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full min-w-[640px] text-left border-collapse text-[13px]">
             <thead>
               <tr className="bg-[#E4E8D6] text-[#6B7753] text-[11px] font-bold uppercase tracking-wider">
                 <th className="py-3 px-4 rounded-l-lg">Nama Desa</th>
@@ -677,7 +688,7 @@ export const GerbangKeputusan: React.FC = () => {
                     </td>
                     <td className="py-3 px-4">
                       <span className={`font-bold ${scoreColor}`}>
-                        {score} / 120 ({cat})
+                        <CountUpNumber value={score} /> / 120 ({cat})
                       </span>
                     </td>
                     <td className="py-3 px-4 font-medium text-[#3A4728]">{modelLabel}</td>

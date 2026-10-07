@@ -2,6 +2,7 @@ import React from 'react';
 import { useDesaWatt } from '../context/DesaWattContext';
 import { ManagementModel } from '../types';
 import { GlowingMetricCard } from '@/components/ui/GlowingMetricCard';
+import { CountUpNumber } from '@/components/ui/CountUpNumber';
 
 export const RancangWatt: React.FC = () => {
   const {
@@ -70,9 +71,9 @@ export const RancangWatt: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col gap-6 max-w-7xl mx-auto pb-12 text-[#3A4728]">
+    <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto pb-12 text-[#3A4728] min-w-0">
       {/* Page Title & Breadcrumb */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 w-full min-w-0">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#E4E8D6] text-[#4B5D2A] border border-[#C5CCAE]">
@@ -80,7 +81,7 @@ export const RancangWatt: React.FC = () => {
             </span>
             <span className="text-[#C5CCAE]">•</span>
             <span className="text-[12px] font-semibold text-[#6B7753]">
-              Desa: {activeVillage.name} (Skor: {totalScore})
+              Desa: {activeVillage.name} (Skor: <CountUpNumber value={totalScore} />)
             </span>
           </div>
           <h1 className="text-[28px] font-extrabold text-[#1F2A14] tracking-tight leading-tight">
@@ -123,7 +124,7 @@ export const RancangWatt: React.FC = () => {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 min-[900px]:grid-cols-3 gap-4 w-full min-w-0">
           {modelsConfig.map((m) => {
             const isSelected = effectiveModel === m.id;
             const isRecommended = recommendedModel === m.id;
@@ -203,7 +204,9 @@ export const RancangWatt: React.FC = () => {
               <p className="text-[12px] text-[#7A4F06] mt-0.5 leading-relaxed">
                 Anda memilih model <strong>Milik Koperasi</strong> yang memerlukan ambang skor minimal{' '}
                 <strong>91 poin</strong>, sedangkan skor kesiapan {activeVillage.name} saat ini adalah{' '}
-                <strong>{totalScore} poin ({readinessLevel})</strong>. Memaksakan model ini tanpa
+                <strong>
+                  <CountUpNumber value={totalScore} /> poin ({readinessLevel})
+                </strong>. Memaksakan model ini tanpa
                 pendampingan intensif berisiko memicu gagal kelola dan PLTS mangkrak.
               </p>
             </div>
@@ -212,9 +215,9 @@ export const RancangWatt: React.FC = () => {
       </div>
 
       {/* Simulator Arus Kas & Sliders */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 min-[1100px]:grid-cols-12 gap-6 items-start w-full min-w-0">
         {/* Left: Interactive Sliders (5 cols) */}
-        <div className="lg:col-span-5 bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs space-y-5">
+        <div className="min-[1100px]:col-span-5 bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs space-y-5 w-full min-w-0">
           <div className="flex items-center justify-between pb-3 border-b border-[#C5CCAE]">
             <div>
               <h3 className="text-[16px] font-extrabold text-[#1F2A14]">
@@ -231,7 +234,9 @@ export const RancangWatt: React.FC = () => {
           <div>
             <div className="flex justify-between items-center text-[12px] font-bold mb-1">
               <span className="text-[#3A4728]">Belanja Modal (Capex PLTS)</span>
-              <span className="text-[#4B5D2A] font-black">Rp {capexJuta} Juta</span>
+              <span className="text-[#4B5D2A] font-black">
+                Rp <CountUpNumber value={capexJuta} /> Juta
+              </span>
             </div>
             <input
               type="range"
@@ -254,7 +259,9 @@ export const RancangWatt: React.FC = () => {
           <div>
             <div className="flex justify-between items-center text-[12px] font-bold mb-1">
               <span className="text-[#3A4728]">Tarif Listrik Produktif</span>
-              <span className="text-[#4B5D2A] font-black">Rp {tariffPerKwh} / kWh</span>
+              <span className="text-[#4B5D2A] font-black">
+                Rp <CountUpNumber value={tariffPerKwh} /> / kWh
+              </span>
             </div>
             <input
               type="range"
@@ -277,7 +284,9 @@ export const RancangWatt: React.FC = () => {
           <div>
             <div className="flex justify-between items-center text-[12px] font-bold mb-1">
               <span className="text-[#3A4728]">Porsi Beban Produktif UMKM</span>
-              <span className="text-[#4B5D2A] font-black">{productiveLoadPercent}%</span>
+              <span className="text-[#4B5D2A] font-black">
+                <CountUpNumber value={productiveLoadPercent} />%
+              </span>
             </div>
             <input
               type="range"
@@ -304,7 +313,7 @@ export const RancangWatt: React.FC = () => {
             <div className="flex justify-between items-center text-[12px] font-bold mb-1">
               <span className="text-[#3A4728]">Iuran Rutin per KK</span>
               <span className="text-[#4B5D2A] font-black">
-                Rp {monthlyContributionPerKK.toLocaleString('id-ID')} / bln
+                Rp <CountUpNumber value={monthlyContributionPerKK} /> / bln
               </span>
             </div>
             <input
@@ -356,9 +365,9 @@ export const RancangWatt: React.FC = () => {
         </div>
 
         {/* Right: Real-time Outcomes & Visual Cash-Flow (7 cols) */}
-        <div className="lg:col-span-7 space-y-5">
+        <div className="min-[1100px]:col-span-7 space-y-5 w-full min-w-0">
           {/* 3 Outcome KPI Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full min-w-0">
             <GlowingMetricCard>
               <div className="p-4.5">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B7753]">
@@ -369,7 +378,7 @@ export const RancangWatt: React.FC = () => {
                     simulationResults.npvJuta >= 0 ? 'text-[#4C9A52]' : 'text-[#B84A3A]'
                   }`}
                 >
-                  Rp {simulationResults.npvJuta.toLocaleString('id-ID')} Jt
+                  Rp <CountUpNumber value={simulationResults.npvJuta} /> Jt
                 </div>
                 <span className="text-[11px] text-[#6B7753]">
                   {simulationResults.npvJuta >= 0 ? '✓ Investasi Layak' : '⚠️ NPV Negatif'}
@@ -383,10 +392,10 @@ export const RancangWatt: React.FC = () => {
                   Payback Period
                 </span>
                 <div className="text-[22px] font-black text-[#1F2A14] mt-1">
-                  {simulationResults.paybackPeriodYears} Tahun
+                  <CountUpNumber value={simulationResults.paybackPeriodYears} /> Tahun
                 </div>
                 <span className="text-[11px] text-[#4C9A52] font-bold">
-                  Rata-rata: Rp {simulationResults.netAnnualAverageJuta} Jt/thn
+                  Rata-rata: Rp <CountUpNumber value={simulationResults.netAnnualAverageJuta} /> Jt/thn
                 </span>
               </div>
             </GlowingMetricCard>
@@ -417,13 +426,13 @@ export const RancangWatt: React.FC = () => {
                 warning
               </span>
               <div className="text-[12px] text-[#7A4F06] leading-relaxed">
-                <strong>Peringatan Dana Cadangan:</strong> Saldo akumulasi Dana O&M pada Tahun ke-11 diproyeksikan tidak mampu menutup biaya penggantian baterai sebesar Rp {batteryReplacementCostJuta} Juta. Naikkan iuran bulanan atau tambahkan porsi beban produktif siang hari.
+                <strong>Peringatan Dana Cadangan:</strong> Saldo akumulasi Dana O&M pada Tahun ke-11 diproyeksikan tidak mampu menutup biaya penggantian baterai sebesar Rp <CountUpNumber value={batteryReplacementCostJuta} /> Juta. Naikkan iuran bulanan atau tambahkan porsi beban produktif siang hari.
               </div>
             </div>
           )}
 
           {/* Cumulative Cash-Flow Chart in light card */}
-          <div className="bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs">
+          <div className="bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs w-full min-w-0">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h4 className="text-[15px] font-extrabold text-[#1F2A14]">
@@ -435,8 +444,9 @@ export const RancangWatt: React.FC = () => {
               </div>
             </div>
 
-            {/* SVG Visual Bars with #D3D9BE grid and #4B5D2A / #E0A526 bars */}
-            <div className="w-full h-44 flex items-end gap-1.5 pt-4 pb-2 border-b border-[#D3D9BE]">
+            {/* SVG Visual Bars with #D3D9BE grid and #4B5D2A / #E0A526 bars in self-contained horizontal scroll if needed */}
+            <div className="overflow-x-auto w-full pb-2">
+              <div className="w-full min-w-[380px] h-44 flex items-end gap-1.5 pt-4 pb-2 border-b border-[#D3D9BE]">
               {simulationResults.yearlyData.map((d) => {
                 const maxVal = Math.max(
                   ...simulationResults.yearlyData.map((x) => Math.abs(x.omFundAccumulationJuta)),
@@ -460,7 +470,7 @@ export const RancangWatt: React.FC = () => {
 
                     <div
                       style={{ height: `${heightPercent}%` }}
-                      className={`w-full rounded-t-sm transition-all ${
+                      className={`w-full rounded-t-sm transition-all duration-500 ${
                         d.isBatteryYear
                           ? 'bg-[#E0A526] ring-2 ring-[#E0A526]/50'
                           : isPositive
@@ -474,6 +484,7 @@ export const RancangWatt: React.FC = () => {
                   </div>
                 );
               })}
+              </div>
             </div>
 
             <div className="flex items-center justify-between text-[11px] text-[#6B7753] pt-3 flex-wrap gap-2">

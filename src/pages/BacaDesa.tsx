@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useDesaWatt, INDICATOR_CONFIGS } from '../context/DesaWattContext';
 import { VillageId } from '../types';
 import { GlowingMetricCard } from '@/components/ui/GlowingMetricCard';
+import { CountUpNumber, useCountUp } from '@/components/ui/CountUpNumber';
 
 export const BacaDesa: React.FC = () => {
   const {
@@ -27,6 +28,13 @@ export const BacaDesa: React.FC = () => {
   const financialScore =
     activeVillage.indicators.kemampuan_bayar + activeVillage.indicators.dana_om; // Max 30
 
+  // Animated scores for smooth SVG morphing
+  const animTechnical = useCountUp(technicalScore, 800);
+  const animProductive = useCountUp(productiveScore, 800);
+  const animInstitutional = useCountUp(institutionalScore, 800);
+  const animFinancial = useCountUp(financialScore, 800);
+  const animTotal = useCountUp(totalScore, 800);
+
   const maxCategory = 30;
   const cx = 110;
   const cy = 110;
@@ -34,18 +42,18 @@ export const BacaDesa: React.FC = () => {
 
   const pTop = {
     x: cx,
-    y: cy - (technicalScore / maxCategory) * r,
+    y: cy - (animTechnical / maxCategory) * r,
   };
   const pRight = {
-    x: cx + (productiveScore / maxCategory) * r,
+    x: cx + (animProductive / maxCategory) * r,
     y: cy,
   };
   const pBottom = {
     x: cx,
-    y: cy + (institutionalScore / maxCategory) * r,
+    y: cy + (animInstitutional / maxCategory) * r,
   };
   const pLeft = {
-    x: cx - (financialScore / maxCategory) * r,
+    x: cx - (animFinancial / maxCategory) * r,
     y: cy,
   };
 
@@ -53,7 +61,7 @@ export const BacaDesa: React.FC = () => {
 
   // Gauge calculation for Total Score (Max 120)
   const gaugeCircumference = 2 * Math.PI * 42;
-  const gaugeOffset = gaugeCircumference - (totalScore / 120) * gaugeCircumference;
+  const gaugeOffset = gaugeCircumference - (animTotal / 120) * gaugeCircumference;
 
   const getScoreColor = (score: number) => {
     if (score >= 91) return '#4C9A52';
@@ -62,9 +70,9 @@ export const BacaDesa: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-7xl mx-auto pb-12 text-[#3A4728]">
+    <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto pb-12 text-[#3A4728] min-w-0">
       {/* Page Title & Breadcrumb */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 w-full min-w-0">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#E4E8D6] text-[#4B5D2A] border border-[#C5CCAE]">
@@ -127,7 +135,7 @@ export const BacaDesa: React.FC = () => {
                     isSelected ? 'bg-white/20 text-[#F7F8EE]' : 'bg-[#E4E8D6] text-[#3A4728]'
                   }`}
                 >
-                  {score}/120
+                  <CountUpNumber value={score} />/120
                 </span>
               </button>
             );
@@ -154,9 +162,9 @@ export const BacaDesa: React.FC = () => {
       </div>
 
       {/* Aggregate Score & Overview Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <div className="grid grid-cols-1 min-[1100px]:grid-cols-12 gap-6 items-stretch w-full min-w-0">
         {/* Left Column: Gauge & Level narrative (5 cols) */}
-        <div className="lg:col-span-5 bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs flex flex-col justify-between">
+        <div className="min-[1100px]:col-span-5 bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs flex flex-col justify-between min-w-0">
           <div>
             <div className="flex items-center justify-between mb-4">
               <span className="text-[12px] font-bold uppercase tracking-wider text-[#6B7753]">
@@ -184,7 +192,7 @@ export const BacaDesa: React.FC = () => {
               </span>
             </div>
 
-            <div className="flex items-center gap-6 my-3">
+            <div className="flex flex-col sm:flex-row items-center gap-6 my-3 min-w-0">
               {/* Radial Donut Gauge with Army / Olive accents */}
               <div className="relative w-32 h-32 shrink-0 flex items-center justify-center">
                 <svg className="w-32 h-32 -rotate-90" viewBox="0 0 100 100">
@@ -206,12 +214,12 @@ export const BacaDesa: React.FC = () => {
                     strokeDasharray={gaugeCircumference}
                     strokeDashoffset={gaugeOffset}
                     strokeLinecap="round"
-                    className="transition-all duration-700 ease-out"
+                    className="transition-all duration-300 ease-out"
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                   <span className="text-[32px] font-black text-[#1F2A14] tracking-tight leading-none">
-                    {totalScore}
+                    <CountUpNumber value={totalScore} />
                   </span>
                   <span className="text-[11px] font-bold text-[#6B7753] uppercase tracking-wider mt-1">
                     DARI 120
@@ -245,14 +253,14 @@ export const BacaDesa: React.FC = () => {
                       return (
                         <span className="text-[12px] font-bold text-[#4C9A52] inline-flex items-center gap-1">
                           <span className="material-symbols-outlined text-[16px]">trending_up</span>
-                          +{diffToThreshold} poin di atas ambang model {recModelName} ({recThreshold})
+                          +<CountUpNumber value={diffToThreshold} /> poin di atas ambang model {recModelName} ({recThreshold})
                         </span>
                       );
                     } else {
                       return (
                         <span className="text-[12px] font-bold text-[#B84A3A] inline-flex items-center gap-1">
                           <span className="material-symbols-outlined text-[16px]">warning</span>
-                          −{Math.abs(diffToThreshold)} poin di bawah ambang model {recModelName} ({recThreshold})
+                          −<CountUpNumber value={Math.abs(diffToThreshold)} /> poin di bawah ambang model {recModelName} ({recThreshold})
                         </span>
                       );
                     }
@@ -267,26 +275,26 @@ export const BacaDesa: React.FC = () => {
             <div className="bg-[#FAFBF4] p-2.5 rounded-[12px] border border-[#C5CCAE]">
               <span className="text-[11px] font-bold text-[#6B7753] block">Kesiapan Teknis</span>
               <span className="text-[15px] font-black text-[#1F2A14]">
-                {technicalScore}/30 Pts
+                <CountUpNumber value={technicalScore} />/30 Pts
               </span>
             </div>
             <div className="bg-[#FAFBF4] p-2.5 rounded-[12px] border border-[#C5CCAE]">
               <span className="text-[11px] font-bold text-[#6B7753] block">Beban Produktif</span>
               <span className="text-[15px] font-black text-[#1F2A14]">
-                {productiveScore}/30 Pts
+                <CountUpNumber value={productiveScore} />/30 Pts
               </span>
             </div>
             <div className="bg-[#FAFBF4] p-2.5 rounded-[12px] border border-[#C5CCAE]">
               <span className="text-[11px] font-bold text-[#6B7753] block">Kesiapan Fiskal</span>
               <span className="text-[15px] font-black text-[#1F2A14]">
-                {financialScore}/30 Pts
+                <CountUpNumber value={financialScore} />/30 Pts
               </span>
             </div>
           </div>
         </div>
 
         {/* Right Column: 4-Dimension Radar Chart & Visuals (7 cols) */}
-        <div className="lg:col-span-7 bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs flex flex-col md:flex-row items-center gap-6">
+        <div className="min-[1100px]:col-span-7 bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs flex flex-col md:flex-row items-center gap-6 min-w-0">
           {/* Radar Chart SVG with Grid #D3D9BE and labels #6B7753 */}
           <div className="relative w-56 h-56 shrink-0 flex items-center justify-center">
             <svg className="w-56 h-56 overflow-visible" viewBox="0 0 220 220">
@@ -322,7 +330,7 @@ export const BacaDesa: React.FC = () => {
                 stroke={getScoreColor(totalScore)}
                 strokeWidth="2.5"
                 strokeLinejoin="round"
-                className="transition-all duration-500"
+                className="transition-all duration-300"
               />
 
               {/* Vertex Dots */}
@@ -377,11 +385,13 @@ export const BacaDesa: React.FC = () => {
               <div>
                 <div className="flex justify-between font-bold text-[#3A4728] mb-1">
                   <span>1. Kelayakan Teknis (Lahan & Radiasi)</span>
-                  <span className="text-[#4B5D2A] font-black">{technicalScore} / 30</span>
+                  <span className="text-[#4B5D2A] font-black">
+                    <CountUpNumber value={technicalScore} /> / 30
+                  </span>
                 </div>
                 <div className="w-full bg-[#D3D9BE] h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-[#4B5D2A] h-full rounded-full"
+                    className="bg-[#4B5D2A] h-full rounded-full transition-all duration-700"
                     style={{ width: `${(technicalScore / 30) * 100}%` }}
                   ></div>
                 </div>
@@ -390,11 +400,13 @@ export const BacaDesa: React.FC = () => {
               <div>
                 <div className="flex justify-between font-bold text-[#3A4728] mb-1">
                   <span>2. Beban Produktif Siang Hari</span>
-                  <span className="text-[#825708] font-black">{productiveScore} / 30</span>
+                  <span className="text-[#825708] font-black">
+                    <CountUpNumber value={productiveScore} /> / 30
+                  </span>
                 </div>
                 <div className="w-full bg-[#D3D9BE] h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-[#E0A526] h-full rounded-full"
+                    className="bg-[#E0A526] h-full rounded-full transition-all duration-700"
                     style={{ width: `${(productiveScore / 30) * 100}%` }}
                   ></div>
                 </div>
@@ -403,11 +415,13 @@ export const BacaDesa: React.FC = () => {
               <div>
                 <div className="flex justify-between font-bold text-[#3A4728] mb-1">
                   <span>3. Kelembagaan & Legalitas Koperasi</span>
-                  <span className="text-[#4C9A52] font-black">{institutionalScore} / 30</span>
+                  <span className="text-[#4C9A52] font-black">
+                    <CountUpNumber value={institutionalScore} /> / 30
+                  </span>
                 </div>
                 <div className="w-full bg-[#D3D9BE] h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-[#4C9A52] h-full rounded-full"
+                    className="bg-[#4C9A52] h-full rounded-full transition-all duration-700"
                     style={{ width: `${(institutionalScore / 30) * 100}%` }}
                   ></div>
                 </div>
@@ -416,11 +430,13 @@ export const BacaDesa: React.FC = () => {
               <div>
                 <div className="flex justify-between font-bold text-[#3A4728] mb-1">
                   <span>4. Kapasitas Iuran & Dana Cadangan</span>
-                  <span className="text-[#4B5D2A] font-black">{financialScore} / 30</span>
+                  <span className="text-[#4B5D2A] font-black">
+                    <CountUpNumber value={financialScore} /> / 30
+                  </span>
                 </div>
                 <div className="w-full bg-[#D3D9BE] h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-[#4B5D2A] h-full rounded-full"
+                    className="bg-[#4B5D2A] h-full rounded-full transition-all duration-700"
                     style={{ width: `${(financialScore / 30) * 100}%` }}
                   ></div>
                 </div>
@@ -451,7 +467,7 @@ export const BacaDesa: React.FC = () => {
                 </span>
               </div>
               <span className="text-[12px] font-black text-[#4B5D2A]">
-                {activeVillage.collectionRatePercent}% Komitmen
+                <CountUpNumber value={activeVillage.collectionRatePercent} />% Komitmen
               </span>
             </div>
           </div>
@@ -490,7 +506,7 @@ export const BacaDesa: React.FC = () => {
                       {ind.category} • Indikator {ind.number}
                     </span>
                     <span className="px-2 py-0.5 rounded text-[11px] font-black bg-[#F6E7BD] text-[#825708] border border-[#EED38A]">
-                      Skor: {currentVal} / 15 ({optLabel})
+                      Skor: <CountUpNumber value={currentVal} /> / 15 ({optLabel})
                     </span>
                   </div>
                   <h4 className="text-[14px] font-extrabold text-[#1F2A14]">{ind.name}</h4>
@@ -527,7 +543,7 @@ export const BacaDesa: React.FC = () => {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 min-[900px]:grid-cols-2 gap-5 w-full min-w-0">
           {INDICATOR_CONFIGS.map((ind) => {
             const currentValue = activeVillage.indicators[ind.key];
 
@@ -542,7 +558,8 @@ export const BacaDesa: React.FC = () => {
                       INDIKATOR {ind.number} • {ind.category}
                     </span>
                     <span className="text-[16px] font-black text-[#4B5D2A]">
-                      {currentValue} <span className="text-[12px] text-[#6B7753] font-semibold">/15</span>
+                      <CountUpNumber value={currentValue} />{' '}
+                      <span className="text-[12px] text-[#6B7753] font-semibold">/15</span>
                     </span>
                   </div>
 
@@ -623,8 +640,8 @@ export const BacaDesa: React.FC = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-[13px]">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full min-w-[640px] text-left border-collapse text-[13px]">
             <thead>
               <tr className="bg-[#E4E8D6] text-[#6B7753] text-[11px] font-bold uppercase tracking-wider">
                 <th className="py-3 px-4 rounded-l-lg">Indikator Penilaian (Maks. 15)</th>
@@ -647,13 +664,13 @@ export const BacaDesa: React.FC = () => {
                       {ind.number}. {ind.name}
                     </td>
                     <td className="py-3 px-4 text-center text-[#6B7753]">
-                      {villages['karang-asri'].indicators[ind.key]} / 15
+                      <CountUpNumber value={villages['karang-asri'].indicators[ind.key]} /> / 15
                     </td>
                     <td className="py-3 px-4 text-center text-[#6B7753]">
-                      {villages['tirta-mukti'].indicators[ind.key]} / 15
+                      <CountUpNumber value={villages['tirta-mukti'].indicators[ind.key]} /> / 15
                     </td>
                     <td className="py-3 px-4 text-center font-bold text-[#4B5D2A]">
-                      {villages['sumber-makmur'].indicators[ind.key]} / 15
+                      <CountUpNumber value={villages['sumber-makmur'].indicators[ind.key]} /> / 15
                     </td>
                   </tr>
                 );
@@ -661,13 +678,22 @@ export const BacaDesa: React.FC = () => {
               <tr className="bg-[#FAFBF4] font-extrabold text-[14px]">
                 <td className="py-3.5 px-4 text-[#1F2A14]">TOTAL SKOR KESIAPAN AKHIR</td>
                 <td className="py-3.5 px-4 text-center text-[#B84A3A]">
-                  {Object.values(villages['karang-asri'].indicators).reduce((a, b) => a + b, 0)} / 120
+                  <CountUpNumber
+                    value={Object.values(villages['karang-asri'].indicators).reduce((a, b) => a + b, 0)}
+                  />{' '}
+                  / 120
                 </td>
                 <td className="py-3.5 px-4 text-center text-[#825708]">
-                  {Object.values(villages['tirta-mukti'].indicators).reduce((a, b) => a + b, 0)} / 120
+                  <CountUpNumber
+                    value={Object.values(villages['tirta-mukti'].indicators).reduce((a, b) => a + b, 0)}
+                  />{' '}
+                  / 120
                 </td>
                 <td className="py-3.5 px-4 text-center text-[#4C9A52]">
-                  {Object.values(villages['sumber-makmur'].indicators).reduce((a, b) => a + b, 0)} / 120
+                  <CountUpNumber
+                    value={Object.values(villages['sumber-makmur'].indicators).reduce((a, b) => a + b, 0)}
+                  />{' '}
+                  / 120
                 </td>
               </tr>
             </tbody>
@@ -676,14 +702,14 @@ export const BacaDesa: React.FC = () => {
       </div>
 
       {/* Bottom Action Footer Strip */}
-      <div className="bg-[#E4E8D6] border border-[#C5CCAE] p-5 rounded-[14px] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-[#E4E8D6] border border-[#C5CCAE] p-5 rounded-[14px] flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full min-w-0">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-[#4B5D2A] text-[#F7F8EE] flex items-center justify-center shrink-0">
             <span className="material-symbols-outlined text-[22px]">verified</span>
           </div>
           <div>
             <h4 className="text-[14px] font-extrabold text-[#4B5D2A]">
-              Skor Siap: Terkalkulasi {totalScore}/120 (Level {readinessLevel})
+              Skor Siap: Terkalkulasi <CountUpNumber value={totalScore} />/120 (Level {readinessLevel})
             </h4>
             <p className="text-[12px] text-[#3A4728]">
               Tahap selanjutnya: Analisis model kepemilikan dan kalkulasi simulator arus kas di modul

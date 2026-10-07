@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { useDesaWatt } from '../context/DesaWattContext';
 import { GlowingMetricCard } from '@/components/ui/GlowingMetricCard';
+import { CountUpNumber } from '@/components/ui/CountUpNumber';
 
 export const JagaWatt: React.FC = () => {
   const { activeVillage, setIsPublicPortal } = useDesaWatt();
   const [showRulesModal, setShowRulesModal] = useState(false);
 
   return (
-    <div className="flex flex-col gap-6 max-w-7xl mx-auto pb-12 text-[#3A4728]">
+    <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto pb-12 text-[#3A4728] min-w-0">
       {/* Page Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 w-full min-w-0">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#E4E8D6] text-[#4B5D2A] border border-[#C5CCAE]">
@@ -51,7 +52,7 @@ export const JagaWatt: React.FC = () => {
 
       {/* Main Status Banner */}
       <div
-        className={`p-6 rounded-[14px] border flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs ${
+        className={`p-6 rounded-[14px] border flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs w-full min-w-0 ${
           activeVillage.statusPLTS === 'Sehat'
             ? 'bg-[#E2F0E4] border-[#C2E0C5]'
             : activeVillage.statusPLTS === 'Waspada'
@@ -103,21 +104,23 @@ export const JagaWatt: React.FC = () => {
             <span className="text-[11px] font-bold text-[#6B7753] uppercase block">
               Tegangan Bus DC
             </span>
-            <span className="text-[20px] font-black text-[#1F2A14]">51.8 Volt</span>
+            <span className="text-[20px] font-black text-[#1F2A14]">
+              <CountUpNumber value={51.8} decimals={1} /> Volt
+            </span>
           </div>
           <div>
             <span className="text-[11px] font-bold text-[#6B7753] uppercase block">
               Sinking Fund Bulan Ini
             </span>
             <span className="text-[20px] font-black text-[#4C9A52]">
-              {activeVillage.collectionRatePercent}% Terkumpul
+              <CountUpNumber value={activeVillage.collectionRatePercent} />% Terkumpul
             </span>
           </div>
         </div>
       </div>
 
       {/* 4 Dimensions Diagnostic Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 min-[1200px]:grid-cols-4 gap-4 w-full min-w-0">
         {/* Dimensi 1: Kinerja Teknis */}
         <GlowingMetricCard>
           <div className="p-5 flex flex-col justify-between h-full">
@@ -127,9 +130,11 @@ export const JagaWatt: React.FC = () => {
               </span>
               <span className="w-2.5 h-2.5 rounded-full bg-[#E0A526]"></span>
             </div>
-            <div className="text-[22px] font-black text-[#1F2A14]">91.4% Efisiensi</div>
+            <div className="text-[22px] font-black text-[#1F2A14]">
+              <CountUpNumber value={91.4} decimals={1} />% Efisiensi
+            </div>
             <p className="text-[12px] text-[#3A4728] mt-1 leading-relaxed">
-              Array surya normal (99.1%), Inverter Unit 2 perlu pembersihan debu rutin.
+              Array surya normal (<CountUpNumber value={99.1} decimals={1} />%), Inverter Unit 2 perlu pembersihan debu rutin.
             </p>
           </div>
         </GlowingMetricCard>
@@ -144,10 +149,10 @@ export const JagaWatt: React.FC = () => {
               <span className="w-2.5 h-2.5 rounded-full bg-[#4C9A52]"></span>
             </div>
             <div className="text-[22px] font-black text-[#1F2A14]">
-              {activeVillage.collectionRatePercent}% Tertib
+              <CountUpNumber value={activeVillage.collectionRatePercent} />% Tertib
             </div>
             <p className="text-[12px] text-[#3A4728] mt-1 leading-relaxed">
-              Saldo Dana O&M: Rp {activeVillage.saldoDanaOMJuta} Jt (Aman untuk operasional).
+              Saldo Dana O&M: Rp <CountUpNumber value={activeVillage.saldoDanaOMJuta} /> Jt (Aman untuk operasional).
             </p>
           </div>
         </GlowingMetricCard>
@@ -177,25 +182,27 @@ export const JagaWatt: React.FC = () => {
               </span>
               <span className="w-2.5 h-2.5 rounded-full bg-[#4C9A52]"></span>
             </div>
-            <div className="text-[22px] font-black text-[#1F2A14]">99.8% Online</div>
+            <div className="text-[22px] font-black text-[#1F2A14]">
+              <CountUpNumber value={99.8} decimals={1} />% Online
+            </div>
             <p className="text-[12px] text-[#3A4728] mt-1 leading-relaxed">
-              Gateway IoT 4G terhubung stabil dengan latency sinyal &lt; 5 detik.
+              Gateway IoT 4G terhubung stabil dengan latency sinyal &lt; <CountUpNumber value={5} /> detik.
             </p>
           </div>
         </GlowingMetricCard>
       </div>
 
       {/* Telemetry Charts & Alerts (Two Columns) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 min-[1100px]:grid-cols-12 gap-6 items-start w-full min-w-0">
         {/* Left: Production vs Prediction Chart (7 cols) */}
-        <div className="lg:col-span-7 bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs space-y-4">
+        <div className="min-[1100px]:col-span-7 bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs space-y-4 w-full min-w-0">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-[16px] font-extrabold text-[#1F2A14]">
                 Kurva Aliran Daya Sepanjang Hari (Produksi vs Beban)
               </h3>
               <p className="text-[12px] text-[#6B7753]">
-                Puncak irradiasi: 48.6 kW | Beban siang: 32.4 kW | Surplus baterai: +16.2 kW
+                Puncak irradiasi: <CountUpNumber value={48.6} decimals={1} /> kW | Beban siang: <CountUpNumber value={32.4} decimals={1} /> kW | Surplus baterai: +<CountUpNumber value={16.2} decimals={1} /> kW
               </p>
             </div>
             <span className="text-[11px] font-bold text-[#4B5D2A] bg-[#E4E8D6] px-2.5 py-1 rounded-full border border-[#C5CCAE]">
@@ -260,12 +267,14 @@ export const JagaWatt: React.FC = () => {
         </div>
 
         {/* Right: Actionable Alerts List (5 cols) */}
-        <div className="lg:col-span-5 bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs space-y-4">
+        <div className="min-[1100px]:col-span-5 bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs space-y-4 w-full min-w-0">
           <div className="flex items-center justify-between">
             <h3 className="text-[16px] font-extrabold text-[#1F2A14]">
               Daftar Peringatan Dini & Tindakan Cepat
             </h3>
-            <span className="text-[11px] font-bold text-[#6B7753]">3 Pemberitahuan</span>
+            <span className="text-[11px] font-bold text-[#6B7753]">
+              <CountUpNumber value={3} /> Pemberitahuan
+            </span>
           </div>
 
           {/* Alert 1: Waspada */}
@@ -280,7 +289,7 @@ export const JagaWatt: React.FC = () => {
               Inverter Unit 2: Sirip Pendingin Berdebu
             </h4>
             <p className="text-[12px] text-[#7A4F06] leading-relaxed">
-              Penurunan efisiensi termal 4%. Teknisi lokal ({activeVillage.technicianName})
+              Penurunan efisiensi termal <CountUpNumber value={4} />%. Teknisi lokal ({activeVillage.technicianName})
               dijadwalkan pembersihan sirip rutin pukul 16:30 WIB.
             </p>
           </div>
@@ -298,7 +307,7 @@ export const JagaWatt: React.FC = () => {
             </h4>
             <p className="text-[12px] text-[#1E4D23] leading-relaxed">
               Penyetoran kas iuran bulanan warga berhasil diverifikasi ke rekening escrow bank senilai
-              Rp 14.850.000.
+              Rp <CountUpNumber value={14850000} />.
             </p>
           </div>
 

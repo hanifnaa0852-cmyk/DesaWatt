@@ -61,30 +61,30 @@ export const LoginPage: React.FC = () => {
       </header>
 
       {/* Main 2-Column Split Hero Layout */}
-      <main className="relative z-20 flex-1 flex items-center justify-center p-6 lg:p-12">
-        <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
+      <main className="relative z-20 flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-12 min-w-0 w-full">
+        <div className="w-full max-w-6xl grid grid-cols-1 min-[1100px]:grid-cols-12 gap-8 min-[1100px]:gap-12 items-center min-w-0">
           
           {/* LEFT COLUMN: Engaging Hero Showcase & Live Microgrid Highlights */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="min-[1100px]:col-span-7 space-y-6 w-full min-w-0">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F3F5EA] border border-[#C5CCAE] text-[#4B5D2A] text-[12px] font-extrabold tracking-wide shadow-xs">
               <span className="material-symbols-outlined text-[16px] text-[#E0A526]">bolt</span>
               <span>Kedaulatan Energi Berkelanjutan BUMDes & Koperasi</span>
             </div>
 
             <div className="space-y-3">
-              <h1 className="text-[34px] sm:text-[44px] font-black tracking-tight leading-[1.15] text-[#F7F8EE] drop-shadow-md">
+              <h1 className="text-[28px] sm:text-[38px] lg:text-[44px] font-black tracking-tight leading-[1.15] text-[#F7F8EE] drop-shadow-md">
                 Nyalakan Terang Desa, <br />
                 <span className="text-[#F6E7BD] underline decoration-[#E0A526] decoration-4 underline-offset-4">
                   Kawal PLTS Bebas Mangkrak.
                 </span>
               </h1>
-              <p className="text-[15px] sm:text-[16px] text-[#F7F8EE]/90 leading-relaxed max-w-xl font-medium drop-shadow-xs">
+              <p className="text-[14px] sm:text-[15px] text-[#F7F8EE]/90 leading-relaxed max-w-xl font-medium drop-shadow-xs">
                 Platform terpadu pendukung keputusan koperasi desa: analisis kesiapan komunal, uji ketahanan kas baterai, dan pengawasan operasional microgrid secara transparan.
               </p>
             </div>
 
             {/* 3 Value Proposition Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2 w-full min-w-0">
               <div className="p-4 rounded-[14px] bg-[#F3F5EA]/95 border border-[#C5CCAE] shadow-xs space-y-1 hover:border-[#4B5D2A] transition-all">
                 <div className="w-8 h-8 rounded-lg bg-[#E4E8D6] text-[#4B5D2A] flex items-center justify-center font-bold mb-2">
                   <span className="material-symbols-outlined text-[18px]">fact_check</span>
