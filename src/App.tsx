@@ -10,6 +10,7 @@ import { GerbangKeputusan } from './pages/GerbangKeputusan';
 import { JagaWatt } from './pages/JagaWatt';
 import { PortalWarga } from './pages/PortalWarga';
 import { LoginPage } from './pages/LoginPage';
+import { GuidedTour } from './components/GuidedTour';
 
 function MainApp() {
   const { isPublicPortal, isAuthenticated, activePage } = useDesaWatt();
@@ -25,7 +26,10 @@ function MainApp() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F6F8F7] text-[#334155] flex relative overflow-x-hidden selection:bg-[#147A4B] selection:text-white font-sans">
+    <div className="min-h-screen bg-[#E4E8D6] text-[#3A4728] flex relative overflow-x-hidden selection:bg-[#4B5D2A] selection:text-[#F7F8EE] font-sans">
+      {/* Interactive Guided Tour for New & Existing Users */}
+      <GuidedTour />
+
       {/* Fixed Left Sidebar */}
       <Sidebar />
 

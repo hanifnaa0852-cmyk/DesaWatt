@@ -14,18 +14,18 @@ export const DesaWattShaderBackground: React.FC<DesaWattShaderBackgroundProps> =
   distortion = 0.75,
   swirl = 0.15,
   speed = 0.7,
-  // Deep Forest Green #147A4B, Midnight Navy #0B192C, Rich Emerald #10B981, and Solar Amber #F5A623
+  // Army green #3F4E2C, Olive green #4B5D2A, Forest Olive #5E7336, and Warm Amber #E0A526
   colors = [
-    'hsl(153, 72%, 22%)', // #147A4B Deep Green
-    'hsl(215, 60%, 12%)', // Midnight Deep Slate/Navy
-    'hsl(158, 64%, 38%)', // Vibrant Emerald
-    'hsl(37, 92%, 52%)',  // #F5A623 Solar Amber
+    'hsl(86, 28%, 24%)', // #3F4E2C Army Green
+    'hsl(81, 38%, 26%)', // #4B5D2A Olive Green
+    'hsl(81, 36%, 33%)', // #5E7336 Lighter Olive
+    'hsl(41, 76%, 51%)', // #E0A526 Warm Amber
   ],
 }) => {
   return (
-    <div className={`fixed inset-0 -z-10 overflow-hidden bg-[#07131D] ${className}`}>
-      {/* Dynamic WebGL Fluid Mesh Shader */}
-      <div className="absolute inset-0 opacity-85">
+    <div className={`fixed inset-0 -z-10 overflow-hidden bg-[#2C381E] ${className}`}>
+      {/* Dynamic WebGL Fluid Mesh Shader in Army/Olive & Warm Amber */}
+      <div className="absolute inset-0 opacity-90">
         <MeshGradient
           style={{ height: '100vh', width: '100vw' }}
           distortion={distortion}
@@ -39,11 +39,11 @@ export const DesaWattShaderBackground: React.FC<DesaWattShaderBackgroundProps> =
         />
       </div>
 
-      {/* Subtle Dark Vignette & Depth Overlay to maintain readable contrast */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/75" />
+      {/* Subtle Warm Olive Vignette & Depth Overlay */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#2C381E]/40 via-transparent to-[#1F2A14]/70" />
 
-      {/* High-tech Microgrid vector coordinate lines */}
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:32px_32px]" />
+      {/* Microgrid coordinate lines */}
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(247,248,238,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(247,248,238,0.06)_1px,transparent_1px)] bg-[size:32px_32px]" />
     </div>
   );
 };

@@ -295,6 +295,10 @@ interface DesaWattContextType {
   // Citizen reports
   citizenReports: CitizenReport[];
   addCitizenReport: (report: Omit<CitizenReport, 'id' | 'timestamp' | 'status'>) => void;
+  // Interactive Walkthrough Tour
+  isTourOpen: boolean;
+  setIsTourOpen: (open: boolean) => void;
+  startTour: () => void;
   // Reset
   resetDemoData: () => void;
 }
@@ -317,6 +321,12 @@ export function DesaWattProvider({ children }: { children: React.ReactNode }) {
     organization: 'Koperasi Desa Sumber Makmur Mandiri',
   });
 
+  const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
+
+  const startTour = () => {
+    setIsTourOpen(true);
+  };
+
   const login = async (username = 'Bu Sari', role = 'Pengurus Koperasi') => {
     setCurrentUser({
       name: username,
@@ -324,6 +334,19 @@ export function DesaWattProvider({ children }: { children: React.ReactNode }) {
       organization: 'Koperasi Desa Sumber Makmur Mandiri',
     });
     setIsAuthenticated(true);
+    // Check if user has already seen tour
+    try {
+      const hasCompleted = localStorage.getItem('desawatt_tour_completed');
+      if (!hasCompleted) {
+        // Automatically open tour for first-time login
+        setTimeout(() => {
+          setIsTourOpen(true);
+        }, 600);
+      }
+    } catch {
+      // Fallback
+      setIsTourOpen(true);
+    }
   };
 
   const logout = () => {
@@ -641,6 +664,9 @@ export function DesaWattProvider({ children }: { children: React.ReactNode }) {
         simulationResults,
         citizenReports,
         addCitizenReport,
+        isTourOpen,
+        setIsTourOpen,
+        startTour,
         resetDemoData,
       }}
     >

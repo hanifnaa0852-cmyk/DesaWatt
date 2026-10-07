@@ -12,7 +12,7 @@ export const GlowingMetricCard: React.FC<GlowingMetricCardProps> = ({
   className = '',
 }) => {
   return (
-    <div className={cn("bg-white rounded-2xl border border-[#E2E8F0] shadow-sm hover:shadow-md transition-shadow h-full", className)}>
+    <div className={cn("bg-[#F3F5EA] rounded-[14px] border border-[#C5CCAE] shadow-xs hover:border-[#4B5D2A] transition-all h-full", className)}>
       <div className="relative z-10 w-full h-full">
         {children}
       </div>
