@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDesaWatt } from '../context/DesaWattContext';
 import { GlowingMetricCard } from '@/components/ui/GlowingMetricCard';
 import { CountUpNumber } from '@/components/ui/CountUpNumber';
+import { GradientButton } from '@/components/ui/gradient-button';
 
 export const JagaWatt: React.FC = () => {
   const { activeVillage, setIsPublicPortal } = useDesaWatt();
@@ -30,23 +31,28 @@ export const JagaWatt: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <button
+        <div className="flex items-center gap-3 shrink-0 flex-wrap">
+          <GradientButton
             onClick={() => setShowRulesModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#4B5D2A] bg-[#F3F5EA] text-[#3A4728] hover:bg-[#E4E8D6] font-bold text-[13px] shadow-xs transition-all cursor-pointer"
+            variant="green-outline"
+            size="md"
+            className="inline-flex items-center gap-2 font-bold text-[13px] shadow-xs cursor-pointer py-2.5 px-4"
           >
             <span className="material-symbols-outlined text-[18px] text-[#4B5D2A]">rule</span>
             <span>Lihat Aturan Peringatan</span>
-          </button>
-          <button
+          </GradientButton>
+
+          <GradientButton
             onClick={() => setIsPublicPortal(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#4B5D2A] text-[#F7F8EE] font-bold text-[13px] hover:bg-[#3F4E2C] shadow-sm transition-all cursor-pointer group"
+            variant="green"
+            size="md"
+            className="inline-flex items-center gap-2 font-bold text-[13px] shadow-sm cursor-pointer group py-2.5 px-5"
           >
             <span>Buka Portal Warga</span>
             <span className="material-symbols-outlined text-[18px] group-hover:translate-x-0.5 transition-transform">
               arrow_forward
             </span>
-          </button>
+          </GradientButton>
         </div>
       </div>
 

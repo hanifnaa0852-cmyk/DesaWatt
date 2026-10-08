@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useDesaWatt } from '../context/DesaWattContext';
 import { GlowingMetricCard } from '@/components/ui/GlowingMetricCard';
 import { CountUpNumber } from '@/components/ui/CountUpNumber';
+import { GradientButton } from '@/components/ui/gradient-button';
+import { CetakLaporanModal } from '../components/CetakLaporanModal';
 
 export const GerbangKeputusan: React.FC = () => {
   const {
@@ -23,6 +25,8 @@ export const GerbangKeputusan: React.FC = () => {
     simulationResults,
     setActivePage,
   } = useDesaWatt();
+
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
 
   const getModelLabel = (model: string) => {
     if (model === 'milik_koperasi') return 'Milik Koperasi';
@@ -58,16 +62,29 @@ export const GerbangKeputusan: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <button
+        <div className="flex items-center gap-3 shrink-0 flex-wrap">
+          <GradientButton
+            onClick={() => setIsPrintModalOpen(true)}
+            variant="green-outline"
+            size="md"
+            className="inline-flex items-center gap-2 cursor-pointer shadow-xs text-[13px] py-2.5 px-4 font-bold"
+            title="Buka laporan format cetak A4 1 halaman"
+          >
+            <span className="material-symbols-outlined text-[18px] text-[#4B5D2A]">print</span>
+            <span>Cetak / Simpan PDF</span>
+          </GradientButton>
+
+          <GradientButton
             onClick={() => setActivePage('jaga-watt')}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#4B5D2A] text-[#F7F8EE] font-bold text-[13px] hover:bg-[#3F4E2C] shadow-sm transition-all cursor-pointer group"
+            variant="green"
+            size="md"
+            className="inline-flex items-center gap-2 font-bold text-[13px] shadow-sm cursor-pointer group py-2.5 px-5"
           >
             <span>Lanjut ke 3 Jaga Watt</span>
             <span className="material-symbols-outlined text-[18px] group-hover:translate-x-0.5 transition-transform">
               arrow_forward
             </span>
-          </button>
+          </GradientButton>
         </div>
       </div>
 
@@ -591,30 +608,34 @@ export const GerbangKeputusan: React.FC = () => {
 
             {/* Action Buttons */}
             <div className="space-y-2.5 pt-2">
-              <button
+              <GradientButton
                 type="button"
                 disabled={!gateCanProceed}
                 onClick={() => setActivePage('jaga-watt')}
-                className={`w-full py-3 px-4 rounded-xl font-bold text-[13px] flex items-center justify-center gap-2 transition-all ${
+                variant={gateCanProceed ? 'green-gold' : 'default'}
+                size="md"
+                className={`w-full py-3 px-4 font-bold text-[13px] flex items-center justify-center gap-2 transition-all ${
                   gateCanProceed
-                    ? 'bg-[#4B5D2A] text-[#F7F8EE] hover:bg-[#3F4E2C] shadow-xs cursor-pointer'
-                    : 'bg-[#D3D9BE] text-[#6B7753] cursor-not-allowed'
+                    ? 'cursor-pointer shadow-xs'
+                    : 'opacity-50 cursor-not-allowed'
                 }`}
               >
                 <span className="material-symbols-outlined text-[18px]">
                   {gateCanProceed ? 'done_all' : 'lock'}
                 </span>
                 <span>Lanjutkan ke Pemasangan (SPK)</span>
-              </button>
+              </GradientButton>
 
-              <button
+              <GradientButton
                 type="button"
                 onClick={() => setActivePage('baca-desa')}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#FAFBF4] hover:bg-[#E4E8D6] text-[#3A4728] font-bold text-[13px] transition-all flex items-center justify-center gap-2 cursor-pointer border border-[#C5CCAE]"
+                variant="green-outline"
+                size="md"
+                className="w-full py-2.5 px-4 font-bold text-[13px] flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
               >
                 <span className="material-symbols-outlined text-[18px]">undo</span>
                 <span>Kembalikan ke Pendampingan</span>
-              </button>
+              </GradientButton>
             </div>
 
             {/* Sign-off Verifier */}
@@ -724,6 +745,13 @@ export const GerbangKeputusan: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Modal Cetak / Simpan PDF Siap Cetak A4 */}
+      <CetakLaporanModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        villageId={selectedVillageId}
+      />
     </div>
   );
 };

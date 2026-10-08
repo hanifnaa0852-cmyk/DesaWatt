@@ -1,14 +1,15 @@
-import React from "react";
-import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
+import { GradientButton } from "@/components/ui/gradient-button"
 
-export function BackgroundGradientAnimationDemo() {
+function Demo() {
   return (
-    <BackgroundGradientAnimation>
-      <div className="absolute z-50 inset-0 flex items-center justify-center text-white font-bold px-4 pointer-events-none text-3xl text-center md:text-4xl lg:text-7xl">
-        <p className="bg-clip-text text-transparent drop-shadow-2xl bg-gradient-to-b from-white/80 to-white/20">
-          Gradients X Animations
-        </p>
-      </div>
-    </BackgroundGradientAnimation>
-  );
+    <div className="flex flex-wrap gap-4 p-6 bg-[#E4E8D6] rounded-2xl items-center">
+      <GradientButton>Get Started</GradientButton>
+      <GradientButton variant="variant">Variant Blue</GradientButton>
+      <GradientButton variant="green">DesaWatt Hijau</GradientButton>
+      <GradientButton variant="green-gold">Hijau & Emas</GradientButton>
+      <GradientButton variant="green-outline">Hijau Outline</GradientButton>
+    </div>
+  )
 }
+
+export { Demo }

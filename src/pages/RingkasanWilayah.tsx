@@ -3,6 +3,7 @@ import { useDesaWatt } from '../context/DesaWattContext';
 import { VillageId, ReadinessLevel } from '../types';
 import { CountUpNumber } from '@/components/ui/CountUpNumber';
 import { GlowingMetricCard } from '@/components/ui/GlowingMetricCard';
+import { GradientButton } from '@/components/ui/gradient-button';
 import { CetakLaporanModal } from '../components/CetakLaporanModal';
 
 export const RingkasanWilayah: React.FC = () => {
@@ -569,13 +570,15 @@ export const RingkasanWilayah: React.FC = () => {
                     </td>
 
                     <td className="py-3.5 px-4 text-right">
-                      <button
+                      <GradientButton
                         onClick={() => handleOpenVillage(v.id)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#4B5D2A] hover:bg-[#3F4E2C] text-[#F7F8EE] text-[12px] font-bold transition-colors cursor-pointer shadow-2xs"
+                        variant="green"
+                        size="sm"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-[12px] font-bold cursor-pointer shadow-2xs"
                       >
                         <span>Buka Desa</span>
                         <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                      </button>
+                      </GradientButton>
                     </td>
                   </tr>
                 );

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useDesaWatt, INDICATOR_CONFIGS } from '../context/DesaWattContext';
 import { VillageId } from '../types';
+import { GradientButton } from '@/components/ui/gradient-button';
 
 interface CetakLaporanModalProps {
   isOpen: boolean;
@@ -73,19 +74,23 @@ export const CetakLaporanModal: React.FC<CetakLaporanModalProps> = ({
             <span className="font-bold text-[14px]">Pratinjau Laporan Kesiapan PLTS Desa (Siap Cetak A4)</span>
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <GradientButton
               onClick={handlePrint}
-              className="px-4 py-1.5 rounded-lg bg-[#E0A526] hover:bg-[#C9911D] text-[#1F2A14] font-black text-[13px] flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+              variant="green-gold"
+              size="sm"
+              className="font-black text-[13px] flex items-center gap-1.5 cursor-pointer shadow-sm"
             >
               <span className="material-symbols-outlined text-[18px]">print</span>
               <span>Cetak / Simpan PDF</span>
-            </button>
-            <button
+            </GradientButton>
+            <GradientButton
               onClick={onClose}
-              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[#F7F8EE] font-bold text-[13px] transition-colors cursor-pointer"
+              variant="green-outline"
+              size="sm"
+              className="font-bold text-[13px] cursor-pointer"
             >
               Tutup
-            </button>
+            </GradientButton>
           </div>
         </div>
 

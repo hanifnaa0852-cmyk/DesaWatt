@@ -3,6 +3,9 @@ import { useDesaWatt, INDICATOR_CONFIGS } from '../context/DesaWattContext';
 import { VillageId } from '../types';
 import { GlowingMetricCard } from '@/components/ui/GlowingMetricCard';
 import { CountUpNumber, useCountUp } from '@/components/ui/CountUpNumber';
+import { GradientButton } from '@/components/ui/gradient-button';
+import { JalurNaikLevel } from '../components/JalurNaikLevel';
+import { CetakLaporanModal } from '../components/CetakLaporanModal';
 
 export const BacaDesa: React.FC = () => {
   const {
@@ -17,6 +20,8 @@ export const BacaDesa: React.FC = () => {
     lowestIndicators,
     setActivePage,
   } = useDesaWatt();
+
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
 
   // Radar chart calculation variables
   const technicalScore =
@@ -92,16 +97,29 @@ export const BacaDesa: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <button
+        <div className="flex items-center gap-3 shrink-0 flex-wrap">
+          <GradientButton
+            onClick={() => setIsPrintModalOpen(true)}
+            variant="green-outline"
+            size="md"
+            className="inline-flex items-center gap-2 cursor-pointer shadow-xs text-[13px] py-2.5 px-4 font-bold"
+            title="Buka laporan format cetak A4 1 halaman"
+          >
+            <span className="material-symbols-outlined text-[18px] text-[#4B5D2A]">print</span>
+            <span>Cetak / Simpan PDF</span>
+          </GradientButton>
+
+          <GradientButton
             onClick={() => setActivePage('rancang-watt')}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#4B5D2A] text-[#F7F8EE] font-bold text-[13px] hover:bg-[#3F4E2C] shadow-sm transition-all cursor-pointer group"
+            variant="green"
+            size="md"
+            className="inline-flex items-center gap-2 font-bold text-[13px] shadow-sm cursor-pointer group py-2.5 px-5"
           >
             <span>Lanjut ke Rancang Watt</span>
             <span className="material-symbols-outlined text-[18px] group-hover:translate-x-0.5 transition-transform">
               arrow_forward
             </span>
-          </button>
+          </GradientButton>
         </div>
       </div>
 
@@ -521,6 +539,9 @@ export const BacaDesa: React.FC = () => {
         </div>
       </div>
 
+      {/* JALUR NAIK LEVEL: Intervensi Simulasi Indikator Menahan Skor */}
+      <JalurNaikLevel />
+
       {/* 8 Indicators Assessment Matrix */}
       <div className="bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-[#C5CCAE] gap-2 mb-6">
@@ -718,16 +739,25 @@ export const BacaDesa: React.FC = () => {
           </div>
         </div>
 
-        <button
+        <GradientButton
           onClick={() => setActivePage('rancang-watt')}
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#4B5D2A] text-[#F7F8EE] font-extrabold text-[14px] hover:bg-[#3F4E2C] shadow-sm transition-all cursor-pointer group"
+          variant="green"
+          size="lg"
+          className="inline-flex items-center justify-center gap-2 font-extrabold text-[14px] shadow-sm cursor-pointer group py-3 px-6"
         >
           <span>Lanjut ke Simulasi "Rancang Watt"</span>
           <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">
             arrow_forward
           </span>
-        </button>
+        </GradientButton>
       </div>
+
+      {/* Modal Cetak / Simpan PDF Siap Cetak A4 */}
+      <CetakLaporanModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        villageId={selectedVillageId}
+      />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useDesaWatt, INDICATOR_CONFIGS } from '../context/DesaWattContext';
 import { IndicatorKey, ReadinessLevel, ManagementModel, VillageId } from '../types';
 import { CountUpNumber } from '@/components/ui/CountUpNumber';
+import { GradientButton } from '@/components/ui/gradient-button';
 
 interface InterventionItem {
   key: IndicatorKey;
@@ -290,33 +291,37 @@ export const JalurNaikLevel: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <button
+          <GradientButton
             type="button"
             onClick={handleReset}
             disabled={activeInterventionCount === 0}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all border ${
+            variant="green-outline"
+            size="sm"
+            className={`inline-flex items-center gap-1.5 text-[12px] font-bold ${
               activeInterventionCount > 0
-                ? 'bg-[#FAFBF4] hover:bg-[#E4E8D6] text-[#3A4728] border-[#C5CCAE] cursor-pointer shadow-2xs'
-                : 'bg-[#FAFBF4]/50 text-[#6B7753]/60 border-[#C5CCAE]/50 cursor-not-allowed'
+                ? 'cursor-pointer shadow-2xs'
+                : 'opacity-50 cursor-not-allowed'
             }`}
           >
             <span className="material-symbols-outlined text-[16px]">restart_alt</span>
             <span>Reset Simulasi</span>
-          </button>
+          </GradientButton>
 
-          <button
+          <GradientButton
             type="button"
             onClick={handleApply}
             disabled={activeInterventionCount === 0}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-bold transition-all shadow-xs ${
+            variant={activeInterventionCount > 0 ? 'green-gold' : 'green'}
+            size="sm"
+            className={`inline-flex items-center gap-1.5 text-[12px] font-bold shadow-xs ${
               activeInterventionCount > 0
-                ? 'bg-[#4B5D2A] hover:bg-[#3F4E2C] text-[#F7F8EE] cursor-pointer'
-                : 'bg-[#D3D9BE] text-[#6B7753] cursor-not-allowed'
+                ? 'cursor-pointer'
+                : 'opacity-50 cursor-not-allowed'
             }`}
           >
             <span className="material-symbols-outlined text-[16px]">done_all</span>
             <span>Terapkan ke Penilaian</span>
-          </button>
+          </GradientButton>
         </div>
       </div>
 

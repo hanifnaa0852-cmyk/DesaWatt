@@ -3,6 +3,7 @@ import { useDesaWatt } from '../context/DesaWattContext';
 import { ManagementModel } from '../types';
 import { GlowingMetricCard } from '@/components/ui/GlowingMetricCard';
 import { CountUpNumber } from '@/components/ui/CountUpNumber';
+import { GradientButton } from '@/components/ui/gradient-button';
 
 export const RancangWatt: React.FC = () => {
   const {
@@ -94,15 +95,17 @@ export const RancangWatt: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          <button
+          <GradientButton
             onClick={() => setActivePage('gerbang-keputusan')}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#4B5D2A] text-[#F7F8EE] font-bold text-[13px] hover:bg-[#3F4E2C] shadow-sm transition-all cursor-pointer group"
+            variant="green"
+            size="md"
+            className="inline-flex items-center gap-2 font-bold text-[13px] shadow-sm cursor-pointer group py-2.5 px-5"
           >
             <span>Lanjut ke Gerbang Keputusan</span>
             <span className="material-symbols-outlined text-[18px] group-hover:translate-x-0.5 transition-transform">
               arrow_forward
             </span>
-          </button>
+          </GradientButton>
         </div>
       </div>
 

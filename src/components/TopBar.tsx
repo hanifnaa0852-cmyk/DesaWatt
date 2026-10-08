@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDesaWatt } from '../context/DesaWattContext';
 import { VillageId } from '../types';
 import { CountUpNumber } from '@/components/ui/CountUpNumber';
+import { GradientButton } from '@/components/ui/gradient-button';
 
 export const TopBar: React.FC = () => {
   const {
@@ -33,7 +34,7 @@ export const TopBar: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 min-h-16 w-full bg-[#F3F5EA] border-b border-[#C5CCAE] z-40 px-3.5 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2.5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] select-none">
+    <header className="sticky top-0 min-h-16 w-full bg-[#F3F5EA] border-b border-[#C5CCAE] z-40 px-3.5 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2.5 shadow-[0_1px_4px_rgba(0,0,0,0.03)] select-none print:hidden">
       {/* Village selector with responsive shrink and text ellipsis */}
       <div className="relative min-w-0 flex-1 max-w-[280px] sm:max-w-md">
         <button
@@ -105,36 +106,42 @@ export const TopBar: React.FC = () => {
       {/* Right controls: responsive and wrapping gracefully */}
       <div className="flex items-center flex-wrap gap-2 shrink-0">
         {/* Tur Panduan Walkthrough button (compact icon + text) */}
-        <button
+        <GradientButton
           onClick={startTour}
+          variant="green-outline"
+          size="sm"
           title="Buka panduan interaktif cara kerja sistem"
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#4B5D2A] bg-[#FAFBF4] hover:bg-[#E4E8D6] text-[#1F2A14] text-[12px] font-bold transition-all shadow-xs cursor-pointer group shrink-0"
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[12px] font-bold cursor-pointer group shrink-0 min-w-0"
         >
           <span className="material-symbols-outlined text-[16px] text-[#E0A526] group-hover:scale-110 transition-transform">
             explore
           </span>
           <span className="whitespace-nowrap">Tur Panduan</span>
-        </button>
+        </GradientButton>
 
         {/* Reset Demo button (compact icon + short text) */}
-        <button
+        <GradientButton
           onClick={resetDemoData}
+          variant="green-outline"
+          size="sm"
           title="Kembalikan data default simulasi"
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#C5CCAE] hover:border-[#4B5D2A] bg-[#FAFBF4] hover:bg-[#E4E8D6] text-[#3A4728] hover:text-[#1F2A14] text-[12px] font-bold transition-all shadow-xs cursor-pointer shrink-0"
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[12px] font-bold cursor-pointer shrink-0 min-w-0"
         >
           <span className="material-symbols-outlined text-[15px] text-[#6B7753]">restart_alt</span>
           <span className="whitespace-nowrap">Reset Demo</span>
-        </button>
+        </GradientButton>
 
         {/* Portal Transparansi Warga link (stays single line) */}
-        <button
+        <GradientButton
           onClick={() => setIsPublicPortal(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#4B5D2A] hover:bg-[#3F4E2C] text-[#F7F8EE] border border-[#4B5D2A] transition-all text-[12px] font-bold shadow-xs whitespace-nowrap cursor-pointer shrink-0"
+          variant="green"
+          size="sm"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-bold whitespace-nowrap cursor-pointer shrink-0 min-w-0 shadow-xs"
         >
           <span className="material-symbols-outlined text-[16px] text-[#E0A526]">public</span>
           <span className="whitespace-nowrap">Portal Warga (tanpa login)</span>
           <span className="material-symbols-outlined text-[14px]">open_in_new</span>
-        </button>
+        </GradientButton>
 
         {/* User Profile (Concise avatar + name, always visible, without long role text) */}
         <div className="flex items-center gap-1.5 sm:gap-2 pl-2 border-l border-[#C5CCAE] shrink-0">

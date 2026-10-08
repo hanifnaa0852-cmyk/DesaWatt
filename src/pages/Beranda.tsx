@@ -3,6 +3,7 @@ import { useDesaWatt } from '../context/DesaWattContext';
 import { VillageId } from '../types';
 import { GlowingMetricCard } from '@/components/ui/GlowingMetricCard';
 import { CountUpNumber } from '@/components/ui/CountUpNumber';
+import { GradientButton } from '@/components/ui/gradient-button';
 
 export const Beranda: React.FC = () => {
   const {
@@ -266,13 +267,15 @@ export const Beranda: React.FC = () => {
               </div>
             </div>
 
-            <button
+            <GradientButton
               onClick={() => setActivePage('baca-desa')}
-              className="w-full py-2.5 px-4 rounded-xl bg-[#4B5D2A] hover:bg-[#3F4E2C] text-[#F7F8EE] font-bold text-[13px] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+              variant="green"
+              size="md"
+              className="w-full flex items-center justify-center gap-2 cursor-pointer shadow-xs text-[13px] py-2.5 px-4"
             >
               <span>Lihat Rincian 8 Indikator</span>
               <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-            </button>
+            </GradientButton>
           </div>
 
           {/* Pillar 2 */}
@@ -304,13 +307,15 @@ export const Beranda: React.FC = () => {
               </div>
             </div>
 
-            <button
+            <GradientButton
               onClick={() => setActivePage('rancang-watt')}
-              className="w-full py-2.5 px-4 rounded-xl bg-[#4B5D2A] hover:bg-[#3F4E2C] text-[#F7F8EE] font-bold text-[13px] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+              variant="green"
+              size="md"
+              className="w-full flex items-center justify-center gap-2 cursor-pointer shadow-xs text-[13px] py-2.5 px-4"
             >
               <span>Buka Simulator Arus Kas</span>
               <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-            </button>
+            </GradientButton>
           </div>
 
           {/* Pillar 3 */}
@@ -344,13 +349,15 @@ export const Beranda: React.FC = () => {
               </div>
             </div>
 
-            <button
+            <GradientButton
               onClick={() => setActivePage('jaga-watt')}
-              className="w-full py-2.5 px-4 rounded-xl bg-[#4B5D2A] hover:bg-[#3F4E2C] text-[#F7F8EE] font-bold text-[13px] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+              variant="green"
+              size="md"
+              className="w-full flex items-center justify-center gap-2 cursor-pointer shadow-xs text-[13px] py-2.5 px-4"
             >
               <span>Masuk Dashboard Pemantauan</span>
               <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-            </button>
+            </GradientButton>
           </div>
         </div>
       </div>
