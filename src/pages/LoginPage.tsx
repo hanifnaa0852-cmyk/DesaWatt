@@ -41,12 +41,149 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('••••••••');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [showPulseSuccess, setShowPulseSuccess] = useState(false);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
 
   const activeRoleConfig = ROLES.find((r) => r.id === role) || ROLES[0];
+
+  const playChargeUpSound = () => {
+    try {
+      const AudioCtxClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtxClass) return;
+
+      const ctx = new AudioCtxClass();
+      if (ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+      }
+
+      const t0 = ctx.currentTime;
+      // Master Gain: capped at 0.15 volume
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(0.14, t0);
+      masterGain.connect(ctx.destination);
+
+      // --- Bagian 1 (0.0 - 0.7s): Osilator sine naik 110 Hz ke 440 Hz + triangle oktaf atas ---
+      const osc1 = ctx.createOscillator();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(110, t0);
+      osc1.frequency.exponentialRampToValueAtTime(440, t0 + 0.7);
+
+      const osc1Gain = ctx.createGain();
+      osc1Gain.gain.setValueAtTime(0.001, t0);
+      osc1Gain.gain.linearRampToValueAtTime(0.7, t0 + 0.35);
+      osc1Gain.gain.linearRampToValueAtTime(0.2, t0 + 0.7);
+      osc1Gain.gain.linearRampToValueAtTime(0.0001, t0 + 0.75);
+
+      osc1.connect(osc1Gain);
+      osc1Gain.connect(masterGain);
+      osc1.start(t0);
+      osc1.stop(t0 + 0.75);
+
+      // Triangle 1 oktaf di atasnya (220 Hz ke 880 Hz) gain sangat kecil untuk kehangatan
+      const osc1Warm = ctx.createOscillator();
+      osc1Warm.type = 'triangle';
+      osc1Warm.frequency.setValueAtTime(220, t0);
+      osc1Warm.frequency.exponentialRampToValueAtTime(880, t0 + 0.7);
+
+      const osc1WarmGain = ctx.createGain();
+      osc1WarmGain.gain.setValueAtTime(0.001, t0);
+      osc1WarmGain.gain.linearRampToValueAtTime(0.12, t0 + 0.35);
+      osc1WarmGain.gain.linearRampToValueAtTime(0.0001, t0 + 0.72);
+
+      osc1Warm.connect(osc1WarmGain);
+      osc1WarmGain.connect(masterGain);
+      osc1Warm.start(t0);
+      osc1Warm.stop(t0 + 0.75);
+
+      // --- Bagian 2: Nada lonceng C5 (0.65s) dan G5 (0.8s) ---
+      const playBell = (freq: number, startTime: number) => {
+        // Fundamental sine
+        const bellOsc = ctx.createOscillator();
+        bellOsc.type = 'sine';
+        bellOsc.frequency.setValueAtTime(freq, startTime);
+
+        const bellGain = ctx.createGain();
+        bellGain.gain.setValueAtTime(0.0001, startTime);
+        bellGain.gain.linearRampToValueAtTime(0.85, startTime + 0.025);
+        bellGain.gain.setTargetAtTime(0.0001, startTime + 0.04, 0.16);
+
+        bellOsc.connect(bellGain);
+        bellGain.connect(masterGain);
+        bellOsc.start(startTime);
+        bellOsc.stop(startTime + 0.55);
+
+        // Harmonik 2x pada gain sangat kecil
+        const bellHarmonic = ctx.createOscillator();
+        bellHarmonic.type = 'sine';
+        bellHarmonic.frequency.setValueAtTime(freq * 2, startTime);
+
+        const bellHarmonicGain = ctx.createGain();
+        bellHarmonicGain.gain.setValueAtTime(0.0001, startTime);
+        bellHarmonicGain.gain.linearRampToValueAtTime(0.15, startTime + 0.02);
+        bellHarmonicGain.gain.setTargetAtTime(0.0001, startTime + 0.035, 0.1);
+
+        bellHarmonic.connect(bellHarmonicGain);
+        bellHarmonicGain.connect(masterGain);
+        bellHarmonic.start(startTime);
+        bellHarmonic.stop(startTime + 0.45);
+      };
+
+      // C5 (523.25 Hz) at 0.65s
+      playBell(523.25, t0 + 0.65);
+      // G5 (783.99 Hz) at 0.8s
+      playBell(783.99, t0 + 0.8);
+
+      // --- Bagian 3: Kilau halus pada 1.0s (noise putih tersaring highpass 6000 Hz, 0.15s) ---
+      const noiseDuration = 0.15;
+      const bufferSize = Math.floor(ctx.sampleRate * noiseDuration);
+      if (bufferSize > 0) {
+        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = Math.random() * 2 - 1;
+        }
+
+        const whiteNoise = ctx.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'highpass';
+        filter.frequency.setValueAtTime(6000, t0 + 1.0);
+
+        const noiseGain = ctx.createGain();
+        noiseGain.gain.setValueAtTime(0.0001, t0 + 1.0);
+        noiseGain.gain.linearRampToValueAtTime(0.07, t0 + 1.02);
+        noiseGain.gain.setTargetAtTime(0.0001, t0 + 1.04, 0.04);
+
+        whiteNoise.connect(filter);
+        filter.connect(noiseGain);
+        noiseGain.connect(masterGain);
+
+        whiteNoise.start(t0 + 1.0);
+        whiteNoise.stop(t0 + 1.0 + noiseDuration + 0.05);
+      }
+
+      // Cleanup context after sequence finishes
+      setTimeout(() => {
+        try {
+          if (ctx.state !== 'closed') {
+            ctx.close().catch(() => {});
+          }
+        } catch {
+          // ignore
+        }
+      }, 1600);
+    } catch {
+      // Audio not supported or failed silently without blocking app
+    }
+  };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLoggingIn) return;
+
+    if (isSoundEnabled) {
+      playChargeUpSound();
+    }
 
     setIsLoggingIn(true);
 
@@ -83,17 +220,38 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Public Transparency Portal without login */}
-        <button
-          onClick={() => setIsPublicPortal(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FAFBF4] hover:bg-[#E4E8D6] text-[#1F2A14] border border-[#C5CCAE] text-[11.5px] font-bold transition-all shadow-xs group cursor-pointer"
-        >
-          <span className="material-symbols-outlined text-[16px] text-[#E0A526]">public</span>
-          <span>Portal Warga (Tanpa Login)</span>
-          <span className="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform text-[#4B5D2A]">
-            open_in_new
-          </span>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Speaker Sound Toggle (Default: On, saved in local state) */}
+          <button
+            type="button"
+            onClick={() => setIsSoundEnabled((prev) => !prev)}
+            title={isSoundEnabled ? 'Suara efek masuk: Menyala (Klik untuk membisukan)' : 'Suara efek masuk: Mati (Klik untuk membunyikan)'}
+            className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl border text-[11px] font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer ${
+              isSoundEnabled
+                ? 'bg-[#FAFBF4] hover:bg-[#E4E8D6] text-[#4B5D2A] border-[#C5CCAE]'
+                : 'bg-[#FAFBF4]/70 hover:bg-[#E4E8D6] text-[#828D6E] border-[#C5CCAE]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[16px] text-[#4B5D2A]">
+              {isSoundEnabled ? 'volume_up' : 'volume_off'}
+            </span>
+            <span className="hidden sm:inline">
+              {isSoundEnabled ? 'Suara: Nyala' : 'Suara: Mati'}
+            </span>
+          </button>
+
+          {/* Public Transparency Portal without login */}
+          <button
+            onClick={() => setIsPublicPortal(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FAFBF4] hover:bg-[#E4E8D6] text-[#1F2A14] border border-[#C5CCAE] text-[11.5px] font-bold transition-all shadow-xs group cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[16px] text-[#E0A526]">public</span>
+            <span>Portal Warga (Tanpa Login)</span>
+            <span className="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform text-[#4B5D2A]">
+              open_in_new
+            </span>
+          </button>
+        </div>
       </header>
 
       {/* Main 2-Column Split Hero Layout - Compact to fit screen */}
