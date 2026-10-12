@@ -60,7 +60,7 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen lg:h-screen lg:max-h-screen relative text-[#3A4728] flex flex-col justify-between overflow-x-hidden overflow-y-auto lg:overflow-hidden select-none font-sans">
+    <div className="min-h-screen relative text-[#3A4728] flex flex-col justify-between overflow-x-hidden overflow-y-auto select-none font-sans">
       {/* High-Fidelity MeshShader Background */}
       <DesaWattShaderBackground />
 
