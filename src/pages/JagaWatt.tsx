@@ -5,8 +5,39 @@ import { CountUpNumber } from '@/components/ui/CountUpNumber';
 import { GradientButton } from '@/components/ui/gradient-button';
 
 export const JagaWatt: React.FC = () => {
-  const { activeVillage, setIsPublicPortal } = useDesaWatt();
+  const {
+    activeVillage,
+    totalScore,
+    readinessLevel,
+    setIsPublicPortal,
+    citizenReports,
+    updateCitizenReportStatus,
+    currentUser,
+    simulatorParams,
+  } = useDesaWatt();
+
   const [showRulesModal, setShowRulesModal] = useState(false);
+  const [selectedReportFilter, setSelectedReportFilter] = useState<'Semua' | 'Diterima' | 'Ditinjau' | 'Ditindaklanjuti'>('Semua');
+
+  // Filter laporan warga desa aktif
+  const villageReports = citizenReports.filter((r) => r.villageId === activeVillage.id);
+  const openReportsCount = villageReports.filter(
+    (r) => r.status === 'Diterima' || r.status === 'Ditinjau'
+  ).length;
+  const countDiterima = villageReports.filter((r) => r.status === 'Diterima').length;
+  const countDitinjau = villageReports.filter((r) => r.status === 'Ditinjau').length;
+  const countDitindaklanjuti = villageReports.filter((r) => r.status === 'Ditindaklanjuti').length;
+
+  const filteredReports = selectedReportFilter === 'Semua'
+    ? villageReports
+    : villageReports.filter((r) => r.status === selectedReportFilter);
+
+  // Otorisasi peran: Pengurus Koperasi atau Pendamping Desa
+  const canUpdateStatus =
+    currentUser.name.includes('Pengurus') ||
+    currentUser.name.includes('Pendamping') ||
+    currentUser.role.includes('Pengurus') ||
+    currentUser.role.includes('Pendamping');
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto pb-12 text-[#3A4728] min-w-0">
@@ -85,7 +116,7 @@ export const JagaWatt: React.FC = () => {
             </span>
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-[18px] font-black text-[#1F2A14]">{activeVillage.name}</h2>
               <span
                 className={`px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase border ${
@@ -97,6 +128,9 @@ export const JagaWatt: React.FC = () => {
                 }`}
               >
                 STATUS: {activeVillage.statusPLTS}
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#FAFBF4] text-[#4B5D2A] border border-[#C5CCAE]">
+                Profil Kesiapan: Level {readinessLevel}
               </span>
             </div>
             <p className="text-[13px] text-[#3A4728] mt-1 max-w-2xl leading-relaxed">
@@ -158,7 +192,7 @@ export const JagaWatt: React.FC = () => {
               <CountUpNumber value={activeVillage.collectionRatePercent} />% Tertib
             </div>
             <p className="text-[12px] text-[#3A4728] mt-1 leading-relaxed">
-              Saldo Dana O&M: Rp <CountUpNumber value={activeVillage.saldoDanaOMJuta} /> Jt (Aman untuk operasional).
+              Saldo Dana O&M: Rp <CountUpNumber value={activeVillage.saldoDanaOMJuta} /> Jt • Target Cadangan Baterai: Rp <CountUpNumber value={simulatorParams.batteryReplacementCostJuta} /> Jt (Th ke-{simulatorParams.batteryLifespanYears}).
             </p>
           </div>
         </GlowingMetricCard>
@@ -295,7 +329,7 @@ export const JagaWatt: React.FC = () => {
               Inverter Unit 2: Sirip Pendingin Berdebu
             </h4>
             <p className="text-[12px] text-[#7A4F06] leading-relaxed">
-              Penurunan efisiensi termal <CountUpNumber value={4} />%. Teknisi lokal ({activeVillage.technicianName})
+              Penurunan efisiensi termal <CountUpNumber value={4} />%. {activeVillage.technicianName}{' '}
               dijadwalkan pembersihan sirip rutin pukul 16:30 WIB.
             </p>
           </div>
@@ -313,7 +347,7 @@ export const JagaWatt: React.FC = () => {
             </h4>
             <p className="text-[12px] text-[#1E4D23] leading-relaxed">
               Penyetoran kas iuran bulanan warga berhasil diverifikasi ke rekening escrow bank senilai
-              Rp <CountUpNumber value={14850000} />.
+              Rp <CountUpNumber value={14850000} /> untuk tabungan ganti baterai Tahun ke-{simulatorParams.batteryLifespanYears} (Target: Rp <CountUpNumber value={simulatorParams.batteryReplacementCostJuta} /> Jt).
             </p>
           </div>
 
@@ -330,6 +364,215 @@ export const JagaWatt: React.FC = () => {
               Tidak ditemukan retak kaca atau shading pohon baru pada deretan modul PLTS.
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Kartu & Modul: Laporan Warga Terbuka (State Bersama dengan Portal Warga) */}
+      <div className="bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs space-y-5 w-full min-w-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-[#C5CCAE]">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="material-symbols-outlined text-[#4B5D2A] text-[22px]">
+                forum
+              </span>
+              <h3 className="text-[17px] font-extrabold text-[#1F2A14]">
+                Laporan Warga Terbuka
+              </h3>
+              <span className="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-[#FAFBF4] text-[#4B5D2A] border border-[#C5CCAE]">
+                Data ilustratif
+              </span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#E4E8D6] text-[#3A4728]">
+                {openReportsCount} Laporan Terbuka
+              </span>
+            </div>
+            <p className="text-[12px] text-[#6B7753] leading-relaxed">
+              Daftar pengaduan warga dari Portal Warga (tanpa login). Pengurus Koperasi dan Pendamping Desa dapat meninjau dan memperbarui status tindak lanjut tanpa mengubah status teknis PLTS ({activeVillage.statusPLTS}) secara otomatis.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setIsPublicPortal(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FAFBF4] hover:bg-[#E4E8D6] text-[#1F2A14] border border-[#C5CCAE] text-[12px] font-bold transition-all shadow-xs cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[16px] text-[#E0A526]">public</span>
+              <span>Buka Portal Warga</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 3 Ringkasan Metrik Laporan */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="p-3.5 rounded-xl bg-[#FAFBF4] border border-[#C5CCAE] shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-[#6B7753] uppercase">1. Diterima</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-[#4B5D2A]"></span>
+            </div>
+            <div className="text-[20px] font-black text-[#1F2A14] mt-1">
+              <CountUpNumber value={countDiterima} /> <span className="text-[12px] font-medium text-[#6B7753]">Laporan</span>
+            </div>
+            <p className="text-[10px] text-[#6B7753] mt-0.5">Pengaduan baru masuk dari warga</p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#FAFBF4] border border-[#EED38A] shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-[#825708] uppercase">2. Ditinjau</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-[#E0A526]"></span>
+            </div>
+            <div className="text-[20px] font-black text-[#825708] mt-1">
+              <CountUpNumber value={countDitinjau} /> <span className="text-[12px] font-medium text-[#825708]">Laporan</span>
+            </div>
+            <p className="text-[10px] text-[#825708] mt-0.5">Sedang diperiksa pengurus atau teknisi</p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#FAFBF4] border border-[#C2E0C5] shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-[#27602C] uppercase">3. Ditindaklanjuti</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-[#4C9A52]"></span>
+            </div>
+            <div className="text-[20px] font-black text-[#27602C] mt-1">
+              <CountUpNumber value={countDitindaklanjuti} /> <span className="text-[12px] font-medium text-[#27602C]">Laporan</span>
+            </div>
+            <p className="text-[10px] text-[#27602C] mt-0.5">Tindakan penanganan selesai/berjalan</p>
+          </div>
+        </div>
+
+        {/* Filter Tab & Keterangan Wewenang Peran */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 text-[12px]">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[11px] font-bold text-[#6B7753] uppercase mr-1">Filter:</span>
+            {(['Semua', 'Diterima', 'Ditinjau', 'Ditindaklanjuti'] as const).map((filter) => (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => setSelectedReportFilter(filter)}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                  selectedReportFilter === filter
+                    ? 'bg-[#4B5D2A] text-[#F7F8EE]'
+                    : 'bg-[#FAFBF4] text-[#3A4728] border border-[#C5CCAE] hover:bg-[#E4E8D6]'
+                }`}
+              >
+                {filter} {filter === 'Semua' ? `(${villageReports.length})` : filter === 'Diterima' ? `(${countDiterima})` : filter === 'Ditinjau' ? `(${countDitinjau})` : `(${countDitindaklanjuti})`}
+              </button>
+            ))}
+          </div>
+
+          <div className="text-[11px]">
+            {canUpdateStatus ? (
+              <span className="inline-flex items-center gap-1 text-[#27602C] font-semibold bg-[#E2F0E4] px-2.5 py-1 rounded-lg border border-[#C2E0C5]">
+                <span className="material-symbols-outlined text-[15px]">verified_user</span>
+                <span>Peran Anda ({currentUser.initial}): Berwenang memperbarui status</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-[#825708] bg-[#F6E7BD] px-2.5 py-1 rounded-lg border border-[#EED38A]">
+                <span className="material-symbols-outlined text-[15px]">visibility</span>
+                <span>Mode Pengawasan: Pembaruan status oleh Pengurus Koperasi atau Pendamping Desa</span>
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Daftar Laporan Warga */}
+        <div className="space-y-3 pt-1">
+          {filteredReports.length === 0 ? (
+            <div className="p-6 text-center text-[12px] text-[#6B7753] bg-[#FAFBF4] rounded-xl border border-[#C5CCAE]">
+              {selectedReportFilter === 'Semua'
+                ? `Belum ada laporan dari warga untuk ${activeVillage.name}. Kirim laporan pengujian melalui Portal Warga.`
+                : `Tidak ada laporan dengan status "${selectedReportFilter}".`}
+            </div>
+          ) : (
+            filteredReports.map((report) => (
+              <div
+                key={report.id}
+                className="p-4 rounded-xl border border-[#C5CCAE] bg-[#FAFBF4] flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs"
+              >
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-[#E4E8D6] text-[#4B5D2A] border border-[#C5CCAE]">
+                      {report.id}
+                    </span>
+                    <span className="text-[13px] font-extrabold text-[#1F2A14]">
+                      {report.category}
+                    </span>
+                    <span className="text-[#C5CCAE]">•</span>
+                    <span className="text-[12px] text-[#3A4728] font-medium">{report.location}</span>
+                  </div>
+                  <p className="text-[12px] text-[#3A4728] leading-relaxed">
+                    {report.description}
+                  </p>
+                  <div className="text-[11px] text-[#6B7753] flex items-center gap-2 pt-0.5 flex-wrap">
+                    <span>Pelapor: {report.reporterName || 'Warga (Anonim)'}</span>
+                    <span>•</span>
+                    <span>{report.timestamp}</span>
+                  </div>
+                </div>
+
+                {/* Status Saat Ini & Tombol Ubah Status */}
+                <div className="shrink-0 flex flex-col sm:flex-row sm:items-center gap-2.5 pt-2 md:pt-0 border-t md:border-t-0 border-[#C5CCAE]/60">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-bold text-[#6B7753]">Status:</span>
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-extrabold border ${
+                        report.status === 'Ditindaklanjuti'
+                          ? 'bg-[#E2F0E4] text-[#27602C] border-[#C2E0C5]'
+                          : report.status === 'Ditinjau'
+                          ? 'bg-[#F6E7BD] text-[#825708] border-[#EED38A]'
+                          : 'bg-[#F3F5EA] text-[#4B5D2A] border-[#C5CCAE]'
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          report.status === 'Ditindaklanjuti'
+                            ? 'bg-[#4C9A52]'
+                            : report.status === 'Ditinjau'
+                            ? 'bg-[#E0A526]'
+                            : 'bg-[#4B5D2A]'
+                        }`}
+                      />
+                      {report.status}
+                    </span>
+                  </div>
+
+                  {/* Tombol Aksi Perubahan Status (Hanya untuk Pengurus Koperasi / Pendamping Desa) */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {report.status !== 'Diterima' && (
+                      <button
+                        type="button"
+                        onClick={() => updateCitizenReportStatus(report.id, 'Diterima')}
+                        disabled={!canUpdateStatus}
+                        title={canUpdateStatus ? 'Kembalikan ke status Diterima' : 'Hanya Pengurus Koperasi atau Pendamping Desa'}
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#FAFBF4] hover:bg-[#E4E8D6] text-[#3A4728] border border-[#C5CCAE] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        Set Diterima
+                      </button>
+                    )}
+                    {report.status !== 'Ditinjau' && (
+                      <button
+                        type="button"
+                        onClick={() => updateCitizenReportStatus(report.id, 'Ditinjau')}
+                        disabled={!canUpdateStatus}
+                        title={canUpdateStatus ? 'Tandai sedang Ditinjau' : 'Hanya Pengurus Koperasi atau Pendamping Desa'}
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#FAFBF4] hover:bg-[#F6E7BD] text-[#825708] border border-[#EED38A] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        Tandai Ditinjau
+                      </button>
+                    )}
+                    {report.status !== 'Ditindaklanjuti' && (
+                      <button
+                        type="button"
+                        onClick={() => updateCitizenReportStatus(report.id, 'Ditindaklanjuti')}
+                        disabled={!canUpdateStatus}
+                        title={canUpdateStatus ? 'Tandai telah Ditindaklanjuti' : 'Hanya Pengurus Koperasi atau Pendamping Desa'}
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#FAFBF4] hover:bg-[#E2F0E4] text-[#27602C] border border-[#C2E0C5] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        Tandai Ditindaklanjuti
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

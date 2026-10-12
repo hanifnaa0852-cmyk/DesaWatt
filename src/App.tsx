@@ -4,9 +4,12 @@ import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import { Footer } from './components/Footer';
 import { Beranda } from './pages/Beranda';
+import { DengarWarga } from './pages/DengarWarga';
+import { BelajarEnergi } from './pages/BelajarEnergi';
 import { BacaDesa } from './pages/BacaDesa';
 import { RancangWatt } from './pages/RancangWatt';
 import { GerbangKeputusan } from './pages/GerbangKeputusan';
+import { KelolaBersama } from './pages/KelolaBersama';
 import { JagaWatt } from './pages/JagaWatt';
 import { PortalWarga } from './pages/PortalWarga';
 import { LoginPage } from './pages/LoginPage';
@@ -44,9 +47,12 @@ function MainApp() {
 
         <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-full overflow-x-hidden print:p-0 print:m-0">
           {activePage === 'beranda' && <Beranda />}
+          {activePage === 'dengar-warga' && <DengarWarga />}
+          {activePage === 'belajar-energi' && <BelajarEnergi />}
           {activePage === 'baca-desa' && <BacaDesa />}
           {activePage === 'rancang-watt' && <RancangWatt />}
           {activePage === 'gerbang-keputusan' && <GerbangKeputusan />}
+          {activePage === 'kelola-bersama' && <KelolaBersama />}
           {activePage === 'jaga-watt' && <JagaWatt />}
           {activePage === 'ringkasan-wilayah' && <RingkasanWilayah />}
         </main>

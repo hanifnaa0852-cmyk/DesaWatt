@@ -3,6 +3,7 @@ import { useDesaWatt } from '../context/DesaWattContext';
 import { VillageId } from '../types';
 import { CountUpNumber } from '@/components/ui/CountUpNumber';
 import { GradientButton } from '@/components/ui/gradient-button';
+import { toScore100, getReadinessLevel } from '../utils/score';
 
 export const TopBar: React.FC = () => {
   const {
@@ -50,12 +51,12 @@ export const TopBar: React.FC = () => {
               {activeVillage.name}, {activeVillage.regency}
             </span>
             <span
-              className={`hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-extrabold border shrink-0 ${getScoreBadgeColor(
+              className={`hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold border shrink-0 ${getScoreBadgeColor(
                 readinessLevel
               )}`}
             >
               <span className={`w-1.5 h-1.5 rounded-full ${getDotColor(readinessLevel)}`}></span>
-              <CountUpNumber value={totalScore} /> ({readinessLevel})
+              Kesiapan: {readinessLevel}
             </span>
           </div>
           <span className="material-symbols-outlined text-[#6B7753] text-[18px] sm:text-[20px] shrink-0 group-hover:text-[#1F2A14] transition-transform">
@@ -70,8 +71,7 @@ export const TopBar: React.FC = () => {
             </div>
             {(Object.keys(villages) as VillageId[]).map((vId) => {
               const v = villages[vId];
-              const score = Object.values(v.indicators).reduce((a, b) => a + b, 0);
-              const level = score <= 60 ? 'Rendah' : score <= 90 ? 'Menengah' : 'Tinggi';
+              const level = getReadinessLevel(v.dimensions);
               const isSelected = selectedVillageId === vId;
               return (
                 <button
@@ -89,12 +89,12 @@ export const TopBar: React.FC = () => {
                     <div className="text-[11px] text-[#6B7753] truncate">{v.subdistrict}</div>
                   </div>
                   <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border shrink-0 ${getScoreBadgeColor(
+                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border shrink-0 ${getScoreBadgeColor(
                       level
                     )}`}
                   >
                     <span className={`w-1.5 h-1.5 rounded-full ${getDotColor(level)}`}></span>
-                    <CountUpNumber value={score} /> ({level})
+                    Kesiapan: {level}
                   </span>
                 </button>
               );
@@ -145,10 +145,18 @@ export const TopBar: React.FC = () => {
 
         {/* User Profile (Concise avatar + name, always visible, without long role text) */}
         <div className="flex items-center gap-1.5 sm:gap-2 pl-2 border-l border-[#C5CCAE] shrink-0">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#E4E8D6] text-[#3F4E2C] border border-[#C5CCAE] flex items-center justify-center font-bold text-[12px] shrink-0">
-            {currentUser.name.slice(0, 2).toUpperCase()}
+          <div
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#E4E8D6] text-[#3F4E2C] border border-[#C5CCAE] flex items-center justify-center font-bold text-[11px] sm:text-[12px] shrink-0"
+            title={`Peran: ${currentUser.name}`}
+          >
+            {currentUser.initial ||
+              (currentUser.name.includes('Pengawas')
+                ? 'PW'
+                : currentUser.name.includes('Pendamping')
+                ? 'PD'
+                : 'PK')}
           </div>
-          <span className="text-[12px] sm:text-[13px] font-bold text-[#1F2A14] whitespace-nowrap">
+          <span className="text-[12px] sm:text-[13px] font-bold text-[#1F2A14] whitespace-nowrap max-w-[130px] sm:max-w-[200px] truncate">
             {currentUser.name}
           </span>
           <button

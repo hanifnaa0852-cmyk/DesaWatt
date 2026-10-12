@@ -1,11 +1,17 @@
 import React from 'react';
+import { motion } from 'motion/react';
 
 interface LogoMarkProps {
   className?: string;
   size?: number;
+  animated?: boolean;
 }
 
-export const DesaWattLogoMark: React.FC<LogoMarkProps> = ({ className = '', size = 36 }) => {
+export const DesaWattLogoMark: React.FC<LogoMarkProps> = ({
+  className = '',
+  size = 36,
+  animated = true,
+}) => {
   return (
     <svg
       width={size}
@@ -13,55 +19,165 @@ export const DesaWattLogoMark: React.FC<LogoMarkProps> = ({ className = '', size
       viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
+      className={`${className} overflow-visible`}
       aria-label="DesaWatt Logo Mark"
     >
-      {/* Outer subtle container / badge background */}
-      <rect width="100" height="100" rx="22" fill="#147A4B" />
+      {/* Outer subtle container / badge background with subtle energy pulse border */}
+      <rect width="100" height="100" rx="22" fill="#3F4E2C" />
 
       {/* Sun Ray Beams (Rising Half-Sun) - Solar Amber */}
-      {/* 45-deg Left beam */}
-      <line x1="28" y1="28" x2="35" y2="35" stroke="#F5A623" strokeWidth="4.5" strokeLinecap="round" />
-      {/* Top beam */}
-      <line x1="50" y1="17" x2="50" y2="27" stroke="#F5A623" strokeWidth="4.5" strokeLinecap="round" />
-      {/* 45-deg Right beam */}
-      <line x1="72" y1="28" x2="65" y2="35" stroke="#F5A623" strokeWidth="4.5" strokeLinecap="round" />
+      {animated ? (
+        <motion.g
+          animate={{
+            opacity: [0.75, 1, 0.75],
+            scale: [1, 1.08, 1],
+          }}
+          transition={{
+            repeat: Infinity,
+            duration: 2.8,
+            ease: 'easeInOut',
+          }}
+          style={{ transformOrigin: '50px 52px' }}
+        >
+          {/* 45-deg Left beam */}
+          <line x1="28" y1="28" x2="35" y2="35" stroke="#E0A526" strokeWidth="4.5" strokeLinecap="round" />
+          {/* Top beam */}
+          <line x1="50" y1="17" x2="50" y2="27" stroke="#E0A526" strokeWidth="4.5" strokeLinecap="round" />
+          {/* 45-deg Right beam */}
+          <line x1="72" y1="28" x2="65" y2="35" stroke="#E0A526" strokeWidth="4.5" strokeLinecap="round" />
+        </motion.g>
+      ) : (
+        <g>
+          <line x1="28" y1="28" x2="35" y2="35" stroke="#E0A526" strokeWidth="4.5" strokeLinecap="round" />
+          <line x1="50" y1="17" x2="50" y2="27" stroke="#E0A526" strokeWidth="4.5" strokeLinecap="round" />
+          <line x1="72" y1="28" x2="65" y2="35" stroke="#E0A526" strokeWidth="4.5" strokeLinecap="round" />
+        </g>
+      )}
 
       {/* Rising Half-Sun Arc (Solar Amber) */}
-      <path
-        d="M 28 52 A 22 22 0 0 1 72 52 Z"
-        fill="#F5A623"
-      />
+      {animated ? (
+        <motion.path
+          d="M 28 52 A 22 22 0 0 1 72 52 Z"
+          fill="#E0A526"
+          animate={{
+            fill: ['#E0A526', '#F5A623', '#E0A526'],
+          }}
+          transition={{
+            repeat: Infinity,
+            duration: 3.2,
+            ease: 'easeInOut',
+          }}
+        />
+      ) : (
+        <path d="M 28 52 A 22 22 0 0 1 72 52 Z" fill="#E0A526" />
+      )}
 
-      {/* Center Monitoring & Microgrid Node (White circle + connection ring) */}
-      <circle cx="50" cy="52" r="6.5" fill="#FFFFFF" />
-      <circle cx="50" cy="52" r="2.5" fill="#147A4B" />
+      {/* Center Monitoring & Microgrid Node Pulse Wave */}
+      {animated && (
+        <motion.circle
+          cx="50"
+          cy="52"
+          r="6.5"
+          fill="none"
+          stroke="#FAFBF4"
+          strokeWidth="1.5"
+          animate={{
+            r: [6.5, 12, 15],
+            opacity: [0.9, 0.35, 0],
+          }}
+          transition={{
+            repeat: Infinity,
+            duration: 2.2,
+            ease: 'easeOut',
+          }}
+          style={{ transformOrigin: '50px 52px' }}
+        />
+      )}
+
+      {/* Center Monitoring & Microgrid Node (White circle + inner core) */}
+      {animated ? (
+        <motion.circle
+          cx="50"
+          cy="52"
+          r="6.5"
+          fill="#FAFBF4"
+          animate={{
+            scale: [1, 1.15, 1],
+          }}
+          transition={{
+            repeat: Infinity,
+            duration: 2.2,
+            ease: 'easeInOut',
+          }}
+          style={{ transformOrigin: '50px 52px' }}
+        />
+      ) : (
+        <circle cx="50" cy="52" r="6.5" fill="#FAFBF4" />
+      )}
+      <circle cx="50" cy="52" r="2.5" fill="#3F4E2C" />
 
       {/* Village Pitched Roof & Solar Cell Grid Matrix */}
       {/* Pitched Roof outline */}
       <path
         d="M 18 64 L 50 40 L 82 64"
-        stroke="#FFFFFF"
+        stroke="#FAFBF4"
         strokeWidth="4.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
 
-      {/* Solar Panel Cells under roof / house base */}
-      {/* Left cell */}
-      <rect x="27" y="65" width="12" height="15" rx="2" fill="#FFFFFF" fillOpacity="0.95" />
-      {/* Center cell (with microgrid divider) */}
-      <rect x="44" y="65" width="12" height="15" rx="2" fill="#FFFFFF" fillOpacity="0.95" />
-      {/* Right cell */}
-      <rect x="61" y="65" width="12" height="15" rx="2" fill="#FFFFFF" fillOpacity="0.95" />
+      {/* Solar Panel Cells under roof / house base with rhythmic photon shimmer */}
+      {animated ? (
+        <g>
+          {/* Left cell */}
+          <motion.rect
+            x="27"
+            y="65"
+            width="12"
+            height="15"
+            rx="2"
+            fill="#FAFBF4"
+            animate={{ fillOpacity: [0.85, 1, 0.85] }}
+            transition={{ repeat: Infinity, duration: 2.4, delay: 0 }}
+          />
+          {/* Center cell */}
+          <motion.rect
+            x="44"
+            y="65"
+            width="12"
+            height="15"
+            rx="2"
+            fill="#FAFBF4"
+            animate={{ fillOpacity: [0.85, 1, 0.85] }}
+            transition={{ repeat: Infinity, duration: 2.4, delay: 0.4 }}
+          />
+          {/* Right cell */}
+          <motion.rect
+            x="61"
+            y="65"
+            width="12"
+            height="15"
+            rx="2"
+            fill="#FAFBF4"
+            animate={{ fillOpacity: [0.85, 1, 0.85] }}
+            transition={{ repeat: Infinity, duration: 2.4, delay: 0.8 }}
+          />
+        </g>
+      ) : (
+        <g>
+          <rect x="27" y="65" width="12" height="15" rx="2" fill="#FAFBF4" fillOpacity="0.95" />
+          <rect x="44" y="65" width="12" height="15" rx="2" fill="#FAFBF4" fillOpacity="0.95" />
+          <rect x="61" y="65" width="12" height="15" rx="2" fill="#FAFBF4" fillOpacity="0.95" />
+        </g>
+      )}
 
       {/* Solar Grid Internal Horizontal Line */}
-      <line x1="27" y1="72.5" x2="39" y2="72.5" stroke="#147A4B" strokeWidth="1.5" />
-      <line x1="44" y1="72.5" x2="56" y2="72.5" stroke="#147A4B" strokeWidth="1.5" />
-      <line x1="61" y1="72.5" x2="73" y2="72.5" stroke="#147A4B" strokeWidth="1.5" />
+      <line x1="27" y1="72.5" x2="39" y2="72.5" stroke="#3F4E2C" strokeWidth="1.5" />
+      <line x1="44" y1="72.5" x2="56" y2="72.5" stroke="#3F4E2C" strokeWidth="1.5" />
+      <line x1="61" y1="72.5" x2="73" y2="72.5" stroke="#3F4E2C" strokeWidth="1.5" />
 
       {/* Foundation Ground Line (Firm Stability) */}
-      <line x1="22" y1="84" x2="78" y2="84" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeOpacity="0.75" />
+      <line x1="22" y1="84" x2="78" y2="84" stroke="#FAFBF4" strokeWidth="3" strokeLinecap="round" strokeOpacity="0.85" />
     </svg>
   );
 };

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useDesaWatt } from '../context/DesaWattContext';
+import { useDesaWatt, PREREQUISITE_CONFIGS } from '../context/DesaWattContext';
+import { VillageId, PrerequisiteKey } from '../types';
 import { GlowingMetricCard } from '@/components/ui/GlowingMetricCard';
-import { CountUpNumber } from '@/components/ui/CountUpNumber';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { CetakLaporanModal } from '../components/CetakLaporanModal';
 
@@ -11,18 +11,13 @@ export const GerbangKeputusan: React.FC = () => {
     villages,
     selectedVillageId,
     setSelectedVillageId,
-    totalScore,
     readinessLevel,
     effectiveModel,
-    musdesApproved,
-    setMusdesApproved,
-    pendampingAssigned,
-    setPendampingAssigned,
     calculateGateChecklist,
     gateChecklist,
     gateStatusText,
     gateCanProceed,
-    simulationResults,
+    updatePrerequisite,
     setActivePage,
   } = useDesaWatt();
 
@@ -34,31 +29,36 @@ export const GerbangKeputusan: React.FC = () => {
     return 'Energy-as-a-Service (EaaS)';
   };
 
-  const percentComplete = Math.round(
-    (gateChecklist.passedCount / gateChecklist.totalCount) * 100
-  );
+  const missingCount = gateChecklist.totalCount - gateChecklist.passedCount;
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto pb-12 text-[#3A4728] min-w-0">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 w-full min-w-0">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#E4E8D6] text-[#4B5D2A] border border-[#C5CCAE]">
-              Titik Kritis Kelayakan: Gerbang Keputusan
+              Tahap Penghubung: Gerbang Keputusan
             </span>
             <span className="text-[#C5CCAE]">•</span>
             <span className="text-[12px] font-semibold text-[#6B7753]">
               Desa: {activeVillage.name}
             </span>
+            <span className="text-[#C5CCAE]">•</span>
+            <span className="px-2 py-0.5 rounded-sm text-[10px] font-bold bg-[#F1F3E9] text-[#6B7753] border border-[#D5DCBF]">
+              Data ilustratif
+            </span>
           </div>
-          <h1 className="text-[28px] font-extrabold text-[#1F2A14] tracking-tight leading-tight">
-            Gerbang Keputusan: Verifikasi Akhir Sebelum Pemasangan Fisik
+          <h1 className="text-[26px] sm:text-[28px] font-extrabold text-[#1F2A14] tracking-tight leading-tight">
+            Gerbang Keputusan
           </h1>
-          <p className="text-[14px] text-[#3A4728] mt-1 max-w-3xl leading-relaxed">
-            Mekanisme audit ketat untuk menghentikan proyek PLTS mangkrak sejak di atas kertas.
-            Seluruh syarat teknis, finansial, dan legalitas desa diverifikasi sebelum penerbitan
-            Surat Perintah Kerja (SPK).
+          <p className="text-[13px] font-bold text-[#4B5D2A] mt-0.5">
+            5 Prasyarat Mutlak • Daftar Periksa Bersama Musyawarah Desa & Koperasi
+          </p>
+          <p className="text-[14px] text-[#4A5736] mt-1 max-w-3xl leading-relaxed">
+            Menghubungkan tahap Baca Desa dan Rancang Watt sebelum komitmen pemasangan.
+            Kelima prasyarat ini bersifat mutlak dan tidak dapat dikompensasi oleh dimensi lain.
+            Gerbang bersifat tidak mengikat; keputusan akhir berada pada musyawarah desa, pengurus koperasi, dan pendamping.
           </p>
         </div>
 
@@ -75,12 +75,12 @@ export const GerbangKeputusan: React.FC = () => {
           </GradientButton>
 
           <GradientButton
-            onClick={() => setActivePage('jaga-watt')}
+            onClick={() => setActivePage('kelola-bersama')}
             variant="green"
             size="md"
             className="inline-flex items-center gap-2 font-bold text-[13px] shadow-sm cursor-pointer group py-2.5 px-5"
           >
-            <span>Lanjut ke 3 Jaga Watt</span>
+            <span>Lanjut ke Kelola Bersama</span>
             <span className="material-symbols-outlined text-[18px] group-hover:translate-x-0.5 transition-transform">
               arrow_forward
             </span>
@@ -88,73 +88,99 @@ export const GerbangKeputusan: React.FC = () => {
         </div>
       </div>
 
+      {/* Village Switcher Pills */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#F3F5EA] border border-[#C5CCAE] rounded-xl p-3 shadow-xs">
+        <div className="flex items-center gap-2 text-[12px] font-bold text-[#4B5D2A]">
+          <span className="material-symbols-outlined text-[18px] text-[#2E7D32]">verified_user</span>
+          <span>Pilih Desa untuk Ditinjau:</span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {(Object.keys(villages) as VillageId[]).map((vId) => {
+            const v = villages[vId];
+            const isSelected = vId === selectedVillageId;
+            const gate = calculateGateChecklist(vId);
+
+            return (
+              <button
+                key={vId}
+                onClick={() => setSelectedVillageId(vId)}
+                className={`px-3 py-2 rounded-lg text-[12px] font-bold transition-all text-left flex items-center gap-2 cursor-pointer border ${
+                  isSelected
+                    ? 'bg-[#2E7D32] text-white border-[#2E7D32] shadow-xs'
+                    : 'bg-white text-[#3A4728] border-[#D1D8BE] hover:bg-[#EAEFD9]'
+                }`}
+              >
+                <span>{v.name}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
+                    isSelected ? 'bg-white/20 text-white' : gate.statusStyle
+                  }`}
+                >
+                  {gate.statusText}
+                </span>
+                <span className="text-[9px] uppercase tracking-wider px-1 py-0.2 rounded bg-black/10">
+                  Data ilustratif
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Horizontal Pipeline Track */}
       <div className="rounded-[14px] bg-[#F3F5EA] border border-[#C5CCAE] p-4 sm:p-6 shadow-xs overflow-x-auto w-full min-w-0">
-        <div className="flex items-center justify-between min-w-[850px] relative">
+        <div className="flex items-center justify-between min-w-[750px] relative">
           {/* Track line */}
           <div className="absolute left-8 right-8 top-5 h-1 bg-[#D3D9BE] -z-0"></div>
           <div
-            className="absolute left-8 top-5 h-1 bg-[#4B5D2A] -z-0 transition-all duration-500"
-            style={{ width: gateCanProceed ? '75%' : '58%' }}
+            className="absolute left-8 top-5 h-1 bg-[#2E7D32] -z-0 transition-all duration-500"
+            style={{ width: gateCanProceed ? '80%' : '50%' }}
           ></div>
 
-          {/* Step 1 */}
+          {/* Step 1: Dengar Warga */}
           <div className="relative z-10 flex flex-col items-center text-center w-36">
-            <div className="w-10 h-10 rounded-full bg-[#4B5D2A] text-[#F7F8EE] flex items-center justify-center font-bold text-[13px] shadow-xs mb-1.5 border border-[#5E7336]">
+            <div className="w-10 h-10 rounded-full bg-[#2E7D32] text-white flex items-center justify-center font-bold text-[13px] shadow-xs mb-1.5">
               <span className="material-symbols-outlined text-[18px]">check</span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B7753]">
-              Langkah 01
-            </span>
-            <span className="text-[13px] font-bold text-[#1F2A14]">Skor Baca Desa</span>
-            <span className="mt-1 px-2 py-0.5 rounded-full bg-[#E4E8D6] text-[#4B5D2A] text-[11px] font-extrabold border border-[#C5CCAE]">
-              <CountUpNumber value={totalScore} /> / 120 ({readinessLevel})
-            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B7753]">Komponen 1</span>
+            <span className="text-[12px] font-bold text-[#1F2A14]">Dengar Warga</span>
+            <span className="text-[10px] text-[#6B7753]">Aspirasi Warga</span>
           </div>
 
-          {/* Step 2 */}
+          {/* Step 2: Belajar Energi */}
           <div className="relative z-10 flex flex-col items-center text-center w-36">
-            <div className="w-10 h-10 rounded-full bg-[#4B5D2A] text-[#F7F8EE] flex items-center justify-center font-bold text-[13px] shadow-xs mb-1.5 border border-[#5E7336]">
+            <div className="w-10 h-10 rounded-full bg-[#2E7D32] text-white flex items-center justify-center font-bold text-[13px] shadow-xs mb-1.5">
               <span className="material-symbols-outlined text-[18px]">check</span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B7753]">
-              Langkah 02
-            </span>
-            <span className="text-[13px] font-bold text-[#1F2A14]">Model Terpilih</span>
-            <span className="mt-1 px-2 py-0.5 rounded-full bg-[#E4E8D6] text-[#4B5D2A] text-[11px] font-extrabold border border-[#C5CCAE]">
-              {getModelLabel(effectiveModel)}
-            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B7753]">Komponen 2</span>
+            <span className="text-[12px] font-bold text-[#1F2A14]">Belajar Energi</span>
+            <span className="text-[10px] text-[#6B7753]">Praktik & Literasi</span>
           </div>
 
-          {/* Step 3 */}
+          {/* Step 3: Baca Desa */}
           <div className="relative z-10 flex flex-col items-center text-center w-36">
-            <div className="w-10 h-10 rounded-full bg-[#4B5D2A] text-[#F7F8EE] flex items-center justify-center font-bold text-[13px] shadow-xs mb-1.5 border border-[#5E7336]">
+            <div className="w-10 h-10 rounded-full bg-[#2E7D32] text-white flex items-center justify-center font-bold text-[13px] shadow-xs mb-1.5">
               <span className="material-symbols-outlined text-[18px]">check</span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B7753]">
-              Langkah 03
-            </span>
-            <span className="text-[13px] font-bold text-[#1F2A14]">Arus Kas & O&M</span>
-            <span className="mt-1 px-2 py-0.5 rounded-full bg-[#E4E8D6] text-[#4B5D2A] text-[11px] font-extrabold border border-[#C5CCAE]">
-              +Rp <CountUpNumber value={simulationResults.netAnnualAverageJuta} /> Jt/thn
-            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B7753]">Komponen 3</span>
+            <span className="text-[12px] font-bold text-[#1F2A14]">Baca Desa</span>
+            <span className="text-[10px] text-[#4B5D2A] font-semibold">Profil: {readinessLevel}</span>
           </div>
 
-          {/* Step 4 (Current) */}
+          {/* Step 4: Gerbang Keputusan (Aktif) */}
           <div className="relative z-10 flex flex-col items-center text-center w-44">
-            <div className="w-12 h-12 rounded-full bg-[#E0A526] text-[#1F2A14] flex items-center justify-center font-bold shadow-md ring-4 ring-[#E0A526]/30 mb-1">
-              <span className="material-symbols-outlined text-[22px]">verified_user</span>
+            <div className="w-12 h-12 rounded-full bg-[#D97706] text-white flex items-center justify-center font-bold shadow-md ring-4 ring-[#D97706]/30 mb-1">
+              <span className="material-symbols-outlined text-[22px]">policy</span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#825708]">
-              Aktif Saat Ini
-            </span>
-            <span className="text-[14px] font-extrabold text-[#1F2A14]">Gerbang Keputusan</span>
-            <span className="mt-1 px-2.5 py-0.5 rounded-full bg-[#F6E7BD] text-[#825708] text-[11px] font-extrabold border border-[#EED38A]">
-              Validasi (<CountUpNumber value={gateChecklist.passedCount} />/<CountUpNumber value={gateChecklist.totalCount} />)
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#96600E]">Tahap Penghubung</span>
+            <span className="text-[13px] font-black text-[#1F2A14]">Gerbang Keputusan</span>
+            <span className="mt-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold border bg-white text-[#96600E] border-[#FCDCA7]">
+              {gateChecklist.passedCount}/5 Terpenuhi
             </span>
           </div>
 
-          {/* Step 5 */}
+          {/* Step 5: Kelola Bersama & Pemasangan */}
           <div
             className={`relative z-10 flex flex-col items-center text-center w-36 ${
               gateCanProceed ? 'opacity-100' : 'opacity-40'
@@ -165,465 +191,224 @@ export const GerbangKeputusan: React.FC = () => {
                 {gateCanProceed ? 'lock_open' : 'lock'}
               </span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B7753]">
-              Langkah 05
-            </span>
-            <span className="text-[13px] font-bold text-[#1F2A14]">Pemasangan Fisik</span>
-            <span className="mt-1 px-2 py-0.5 rounded-full bg-[#FAFBF4] text-[#6B7753] text-[11px] font-semibold border border-[#C5CCAE]">
-              {gateCanProceed ? 'Siap SPK' : 'Menunggu SPK'}
-            </span>
-          </div>
-
-          {/* Step 6 */}
-          <div className="relative z-10 flex flex-col items-center text-center w-36 opacity-40">
-            <div className="w-10 h-10 rounded-full bg-[#FAFBF4] text-[#6B7753] flex items-center justify-center font-bold text-[13px] mb-1.5 border border-[#C5CCAE]">
-              <span className="material-symbols-outlined text-[18px]">monitor_heart</span>
-            </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B7753]">
-              Langkah 06
-            </span>
-            <span className="text-[13px] font-bold text-[#1F2A14]">Jaga Watt (M&E)</span>
-            <span className="mt-1 px-2 py-0.5 rounded-full bg-[#FAFBF4] text-[#6B7753] text-[11px] font-semibold border border-[#C5CCAE]">
-              Operasional
-            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B7753]">Komponen 5 & 6</span>
+            <span className="text-[12px] font-bold text-[#1F2A14]">Kelola Bersama</span>
+            <span className="text-[10px] text-[#6B7753]">{gateCanProceed ? 'Siap Berjalan' : 'Menunggu Telaah'}</span>
           </div>
         </div>
       </div>
 
       {/* Main Two-Column Layout */}
       <div className="grid grid-cols-1 min-[1100px]:grid-cols-12 gap-6 items-start w-full min-w-0">
-        {/* Left Column: 5 Verification Checklist (8 cols) */}
+        {/* Left Column: 5 PRASYARAT (8 cols) */}
         <div className="min-[1100px]:col-span-8 space-y-6 w-full min-w-0">
-          <div className="rounded-[14px] bg-[#F3F5EA] border border-[#C5CCAE] p-6 shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#C5CCAE] gap-2 mb-4">
+          <div className="rounded-[14px] bg-white border border-[#C5CCAE] p-6 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#EAEFD9] gap-3 mb-4">
               <div>
-                <h2 className="text-[18px] font-extrabold text-[#1F2A14] flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#4B5D2A] text-[22px]">
+                <h2 className="text-[18px] font-black text-[#1F2A14] flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[#2E7D32] text-[22px]">
                     fact_check
                   </span>
-                  Matriks Verifikasi Kelayakan Mandiri
+                  5 Prasyarat Mutlak (Non-Negotiable)
                 </h2>
-                <p className="text-[12px] text-[#6B7753]">
-                  Kriteria kesiapan DesaWatt (usulan konseptual)
+                <p className="text-[12px] text-[#55633C] mt-0.5">
+                  Prasyarat ini tidak dapat dikompensasi oleh dimensi lain. Centang prasyarat yang telah diverifikasi dan lengkapi bukti tertulis.
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E2F0E4] text-[#27602C] text-[12px] font-extrabold border border-[#C2E0C5]">
-                  <span className="w-2 h-2 rounded-full bg-[#4C9A52]"></span>{' '}
-                  <CountUpNumber value={gateChecklist.passedCount} /> Lulus
+              <div className="flex items-center gap-2 shrink-0">
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-extrabold border ${
+                    gateCanProceed
+                      ? 'bg-[#EBF7F1] text-[#147A4B] border-[#C1E7D4]'
+                      : 'bg-[#FEF6E9] text-[#96600E] border-[#FCDCA7]'
+                  }`}
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      gateCanProceed ? 'bg-[#2E7D32]' : 'bg-[#D97706]'
+                    }`}
+                  ></span>
+                  <span>{gateChecklist.statusText}</span>
                 </span>
-                {gateChecklist.totalCount - gateChecklist.passedCount > 0 && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F6E7BD] text-[#825708] text-[12px] font-extrabold border border-[#EED38A]">
-                    <span className="w-2 h-2 rounded-full bg-[#D99A1E]"></span>{' '}
-                    <CountUpNumber value={gateChecklist.totalCount - gateChecklist.passedCount} /> Menunggu
-                  </span>
-                )}
               </div>
             </div>
 
-            {/* Checklist Items */}
-            <div className="divide-y divide-[#C5CCAE] space-y-1">
-              {/* Item 1: Score threshold */}
-              <div className="py-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                <div className="flex items-start gap-3.5">
+            {/* Checklist 5 Prasyarat Interaktif */}
+            <div className="space-y-4">
+              {PREREQUISITE_CONFIGS.map((cfg) => {
+                const currentPrereq = activeVillage.prerequisites?.[cfg.id] || {
+                  checked: false,
+                  evidenceNote: '',
+                };
+                const isChecked = currentPrereq.checked;
+
+                return (
                   <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                      gateChecklist.scorePass
-                        ? 'bg-[#E2F0E4] text-[#27602C] border border-[#C2E0C5]'
-                        : 'bg-[#F9DFDC] text-[#8B281B] border border-[#ECAAA4]'
+                    key={cfg.id}
+                    className={`p-4 rounded-xl border transition-all ${
+                      isChecked
+                        ? 'bg-[#F9FCF7] border-[#C1E7D4]'
+                        : 'bg-[#FFFDF7] border-[#FCDCA7]'
                     }`}
                   >
-                    <span className="material-symbols-outlined text-[18px]">
-                      {gateChecklist.scorePass ? 'done' : 'close'}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-[14px] font-extrabold text-[#1F2A14]">
-                        1. Skor Memenuhi Ambang Model Terpilih
-                      </h3>
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase ${
-                          gateChecklist.scorePass
-                            ? 'bg-[#E2F0E4] text-[#27602C] border border-[#C2E0C5]'
-                            : 'bg-[#F9DFDC] text-[#8B281B] border border-[#ECAAA4]'
-                        }`}
-                      >
-                        {gateChecklist.scorePass ? 'Lulus' : 'Belum Memenuhi'}
-                      </span>
-                    </div>
-                    <p className="text-[12px] text-[#3A4728] mt-1 leading-relaxed">
-                      Skor perolehan{' '}
-                      <strong className="text-[#1F2A14]">
-                        <CountUpNumber value={totalScore} /> / 120
-                      </strong>{' '}
-                      (Level {readinessLevel}). Ambang minimum model {getModelLabel(effectiveModel)}:
-                      skor ≥ {effectiveModel === 'milik_koperasi' ? 91 : 61} poin.
-                    </p>
-                  </div>
-                </div>
-                <div className="shrink-0 text-right text-[11px] font-semibold text-[#6B7753]">
-                  Bobot: <CountUpNumber value={25} />%
-                </div>
-              </div>
+                    <div className="flex items-start gap-3.5">
+                      {/* Checkbox interaktif pengguna */}
+                      <label className="mt-1 flex items-center cursor-pointer shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) =>
+                            updatePrerequisite(
+                              selectedVillageId,
+                              cfg.id as PrerequisiteKey,
+                              e.target.checked
+                            )
+                          }
+                          className="w-5 h-5 rounded text-[#2E7D32] focus:ring-[#2E7D32] border-[#C5CCAE] cursor-pointer"
+                        />
+                      </label>
 
-              {/* Item 2: OM Fund Plan */}
-              <div className="py-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                <div className="flex items-start gap-3.5">
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                      gateChecklist.omPlanPass
-                        ? 'bg-[#E2F0E4] text-[#27602C] border border-[#C2E0C5]'
-                        : 'bg-[#F9DFDC] text-[#8B281B] border border-[#ECAAA4]'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[18px]">
-                      {gateChecklist.omPlanPass ? 'done' : 'close'}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-[14px] font-extrabold text-[#1F2A14]">
-                        2. Rencana Dana O&M Tertulis & Mengikat (simulasi)
-                      </h3>
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase ${
-                          gateChecklist.omPlanPass
-                            ? 'bg-[#E2F0E4] text-[#27602C] border border-[#C2E0C5]'
-                            : 'bg-[#F9DFDC] text-[#8B281B] border border-[#ECAAA4]'
-                        }`}
-                      >
-                        {gateChecklist.omPlanPass ? 'Lulus' : 'Belum Tersedia'}
-                      </span>
-                    </div>
-                    <p className="text-[12px] text-[#3A4728] mt-1 leading-relaxed">
-                      SOP iuran warga disepakati dengan Saldo Dana O&M Rp <CountUpNumber value={activeVillage.saldoDanaOMJuta} />.000.000 di rekening penampung.
-                    </p>
-                  </div>
-                </div>
-                <div className="shrink-0 text-right text-[11px] font-semibold text-[#6B7753]">
-                  Bobot: <CountUpNumber value={20} />%
-                </div>
-              </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
+                          <h3 className="text-[14px] font-black text-[#1F2A14] flex items-center gap-2">
+                            <span className="w-5 h-5 rounded-full bg-[#EAEFD9] text-[#4B5D2A] text-[10px] font-black flex items-center justify-center">
+                              {cfg.number}
+                            </span>
+                            <span>{cfg.title}</span>
+                          </h3>
 
-              {/* Item 3: Battery replacement plan */}
-              <div className="py-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                <div className="flex items-start gap-3.5">
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                      gateChecklist.batteryPlanPass
-                        ? 'bg-[#E2F0E4] text-[#27602C] border border-[#C2E0C5]'
-                        : 'bg-[#F9DFDC] text-[#8B281B] border border-[#ECAAA4]'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[18px]">
-                      {gateChecklist.batteryPlanPass ? 'done' : 'close'}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-[14px] font-extrabold text-[#1F2A14]">
-                        3. Rencana Penggantian Baterai Tahun Ke-11 (simulasi)
-                      </h3>
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase ${
-                          gateChecklist.batteryPlanPass
-                            ? 'bg-[#E2F0E4] text-[#27602C] border border-[#C2E0C5]'
-                            : 'bg-[#F9DFDC] text-[#8B281B] border border-[#ECAAA4]'
-                        }`}
-                      >
-                        {gateChecklist.batteryPlanPass ? 'Lulus' : 'Belum Direncanakan'}
-                      </span>
-                    </div>
-                    <p className="text-[12px] text-[#3A4728] mt-1 leading-relaxed">
-                      Dari Dana O&M Rp <CountUpNumber value={activeVillage.saldoDanaOMJuta} /> Jt,{' '}
-                      <CountUpNumber
-                        value={Number(((activeVillage.saldoDanaOMJuta / activeVillage.targetBatteryFundJuta) * 100).toFixed(1))}
-                        decimals={1}
-                      />
-                      % dari target penggantian baterai Rp <CountUpNumber value={activeVillage.targetBatteryFundJuta} /> Jt teralokasi dengan mekanisme rekening escrow dual-signature (Dinas/Pendamping + Koperasi).
-                    </p>
-                  </div>
-                </div>
-                <div className="shrink-0 text-right text-[11px] font-semibold text-[#6B7753]">
-                  Bobot: <CountUpNumber value={20} />%
-                </div>
-              </div>
-
-              {/* Item 4: Musdes Approval */}
-              <div
-                className={`py-4 rounded-[12px] -mx-2 px-3 transition-colors ${
-                  musdesApproved ? 'bg-transparent' : 'bg-[#F6E7BD]/40 border border-[#EED38A]'
-                }`}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                  <div className="flex items-start gap-3.5">
-                    <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                        musdesApproved
-                          ? 'bg-[#E2F0E4] text-[#27602C] border border-[#C2E0C5]'
-                          : 'bg-[#F6E7BD] text-[#825708] border border-[#EED38A]'
-                      }`}
-                    >
-                      <span className="material-symbols-outlined text-[18px]">
-                        {musdesApproved ? 'done' : 'pending_actions'}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-[14px] font-extrabold text-[#1F2A14]">
-                          4. Persetujuan Musyawarah Desa (Musdes simulasi)
-                        </h3>
-                        <span
-                          className={`px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase ${
-                            musdesApproved
-                              ? 'bg-[#E2F0E4] text-[#27602C] border border-[#C2E0C5]'
-                              : 'bg-[#F6E7BD] text-[#825708] border border-[#EED38A]'
-                          }`}
-                        >
-                          {musdesApproved ? 'Disahkan & Sah (simulasi)' : 'Belum Lengkap / Menunggu'}
-                        </span>
-                      </div>
-                      <p className="text-[12px] text-[#3A4728] mt-1 leading-relaxed">
-                        {musdesApproved
-                          ? 'Berita Acara (simulasi) Musdes Khusus penandatanganan SK Koperasi (simulasi) telah disahkan bersama BPD & Kepala Desa.'
-                          : 'Berita Acara (simulasi) Musdes Khusus penandatanganan SK Koperasi (simulasi) masih dalam proses pengesahan tanda tangan BPD & Kepala Desa.'}
-                      </p>
-
-                      {/* Interactive Toggle for User */}
-                      <div className="pt-2.5 flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setMusdesApproved(!musdesApproved)}
-                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-bold shadow-xs transition-all cursor-pointer ${
-                            musdesApproved
-                              ? 'bg-[#FAFBF4] text-[#3A4728] hover:bg-[#E4E8D6] border border-[#C5CCAE]'
-                              : 'bg-[#4B5D2A] text-[#F7F8EE] hover:bg-[#3F4E2C]'
-                          }`}
-                        >
-                          <span className="material-symbols-outlined text-[16px]">
-                            {musdesApproved ? 'undo' : 'upload_file'}
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase border ${
+                              isChecked
+                                ? 'bg-[#EBF7F1] text-[#147A4B] border-[#C1E7D4]'
+                                : 'bg-[#FEF6E9] text-[#96600E] border-[#FCDCA7]'
+                            }`}
+                          >
+                            {isChecked ? 'Terpenuhi' : 'Belum Terpenuhi'}
                           </span>
-                          <span>
-                            {musdesApproved
-                              ? 'Batalkan Pengesahan Berita Acara (simulasi)'
-                              : 'Simulasikan: Unggah & Sahkan Berita Acara Musdes (simulasi)'}
-                          </span>
-                        </button>
+                        </div>
+
+                        <p className="text-[12px] text-[#55633C] leading-relaxed mb-3">
+                          {cfg.description}
+                        </p>
+
+                        {/* Kolom Bukti / Catatan Pengguna */}
+                        <div>
+                          <label className="block text-[11px] font-bold text-[#4B5D2A] mb-1">
+                            Bukti & Dokumen Pendukung (Catatan Lapangan):
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Tuliskan nomor Berita Acara, dokumen SOP, atau nama pihak kompeten pemeriksa..."
+                            value={currentPrereq.evidenceNote || ''}
+                            onChange={(e) =>
+                              updatePrerequisite(
+                                selectedVillageId,
+                                cfg.id as PrerequisiteKey,
+                                isChecked,
+                                e.target.value
+                              )
+                            }
+                            className="w-full text-[12px] px-3 py-1.5 rounded-lg bg-white border border-[#C5CCAE] text-[#1F2A14] focus:ring-2 focus:ring-[#2E7D32] focus:outline-hidden"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div className="shrink-0 text-right text-[11px] font-semibold text-[#6B7753]">
-                    Bobot: <CountUpNumber value={20} />%
-                  </div>
-                </div>
-              </div>
-
-              {/* Item 5: Pendamping Assigned */}
-              <div
-                className={`py-4 rounded-[12px] -mx-2 px-3 transition-colors ${
-                  pendampingAssigned ? 'bg-transparent' : 'bg-[#F6E7BD]/40 border border-[#EED38A]'
-                }`}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                  <div className="flex items-start gap-3.5">
-                    <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                        pendampingAssigned
-                          ? 'bg-[#E2F0E4] text-[#27602C] border border-[#C2E0C5]'
-                          : 'bg-[#F6E7BD] text-[#825708] border border-[#EED38A]'
-                      }`}
-                    >
-                      <span className="material-symbols-outlined text-[18px]">
-                        {pendampingAssigned ? 'done' : 'pending_actions'}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-[14px] font-extrabold text-[#1F2A14]">
-                          5. Pendamping Teknis Ditugaskan (simulasi)
-                        </h3>
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase ${
-                            pendampingAssigned
-                              ? 'bg-[#E2F0E4] text-[#27602C] border border-[#C2E0C5]'
-                              : 'bg-[#F6E7BD] text-[#825708] border border-[#EED38A]'
-                          }`}
-                        >
-                          {pendampingAssigned ? 'Lulus / Ditugaskan' : 'Belum Ditugaskan'}
-                        </span>
-                      </div>
-                      <p className="text-[12px] text-[#3A4728] mt-1 leading-relaxed">
-                        {pendampingAssigned
-                          ? `Surat Tugas (simulasi) telah terbit atas nama ${activeVillage.pendampingName} sebagai tenaga pendamping lapangan desa bersertifikasi teknis.`
-                          : 'Tenaga pendamping teknis bersertifikasi belum ditugaskan oleh Dinas/Pendamping untuk desa ini.'}
-                      </p>
-
-                      {/* Interactive Toggle for User */}
-                      <div className="pt-2 flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setPendampingAssigned(!pendampingAssigned)}
-                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-bold shadow-xs transition-all cursor-pointer ${
-                            pendampingAssigned
-                              ? 'bg-[#FAFBF4] text-[#3A4728] hover:bg-[#E4E8D6] border border-[#C5CCAE]'
-                              : 'bg-[#4B5D2A] text-[#F7F8EE] hover:bg-[#3F4E2C]'
-                          }`}
-                        >
-                          <span className="material-symbols-outlined text-[16px]">
-                            {pendampingAssigned ? 'undo' : 'assignment_ind'}
-                          </span>
-                          <span>
-                            {pendampingAssigned
-                              ? 'Batalkan Penugasan Pendamping (simulasi)'
-                              : 'Tugaskan Pendamping Teknis Lapangan (simulasi)'}
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="shrink-0 text-right text-[11px] font-semibold text-[#6B7753]">
-                    Bobot: <CountUpNumber value={15} />%
-                  </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
-          </div>
 
-          {/* Technical Specs Summary Card */}
-          <div className="rounded-[14px] bg-[#F3F5EA] border border-[#C5CCAE] p-6 shadow-xs">
-            <h3 className="text-[16px] font-extrabold text-[#1F2A14] mb-3 flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#4B5D2A] text-[20px]">bolt</span>
-              Ringkasan Spesifikasi Teknis yang Siap Diinstalasi
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 min-[1200px]:grid-cols-4 gap-3 w-full min-w-0">
-              <GlowingMetricCard>
-                <div className="p-3.5 flex flex-col justify-between h-full">
-                  <span className="text-[11px] font-bold text-[#6B7753] block">Kapasitas Puncak</span>
-                  <span className="text-[18px] font-black text-[#1F2A14]">
-                    <CountUpNumber value={activeVillage.capacityKwp} /> kWp
-                  </span>
-                  <span className="text-[10px] text-[#6B7753] block">Tier 1 Monokristalin</span>
-                </div>
-              </GlowingMetricCard>
-
-              <GlowingMetricCard>
-                <div className="p-3.5 flex flex-col justify-between h-full">
-                  <span className="text-[11px] font-bold text-[#6B7753] block">Penyimpanan Baterai</span>
-                  <span className="text-[18px] font-black text-[#1F2A14]">
-                    <CountUpNumber value={activeVillage.batteryKwh} /> kWh
-                  </span>
-                  <span className="text-[10px] text-[#6B7753] block">Lithium Ferro (LiFePO4)</span>
-                </div>
-              </GlowingMetricCard>
-
-              <GlowingMetricCard>
-                <div className="p-3.5 flex flex-col justify-between h-full">
-                  <span className="text-[11px] font-bold text-[#6B7753] block">Penerima Manfaat</span>
-                  <span className="text-[18px] font-black text-[#1F2A14]">
-                    <CountUpNumber value={activeVillage.connectionsKK} /> KK
-                  </span>
-                  <span className="text-[10px] text-[#6B7753] block">+ Fasilitas Umum</span>
-                </div>
-              </GlowingMetricCard>
-
-              <GlowingMetricCard>
-                <div className="p-3.5 flex flex-col justify-between h-full">
-                  <span className="text-[11px] font-bold text-[#6B7753] block">Kemandirian Energi</span>
-                  <span className="text-[18px] font-black text-[#4C9A52]">
-                    <CountUpNumber value={98.4} decimals={1} />%
-                  </span>
-                  <span className="text-[10px] text-[#6B7753] block">Microgrid Komunal</span>
-                </div>
-              </GlowingMetricCard>
+            {/* Helper Text Mutlak Mandatori Prompt 3B */}
+            <div className="mt-5 p-4 rounded-xl bg-[#FFFBEB] border border-[#FDE68A] flex items-start gap-3 text-[12px] text-[#92400E] leading-relaxed">
+              <span className="material-symbols-outlined text-[20px] text-[#D97706] shrink-0 mt-0.5">
+                lightbulb
+              </span>
+              <div>
+                <strong>Petunjuk Telaah Prasyarat:</strong> Jika prasyarat belum terpenuhi, langkah yang disarankan
+                adalah pendampingan dan desain ulang, bukan langsung pemasangan. Keputusan akhir ada pada
+                musyawarah desa, pengurus koperasi, dan pendamping. Gerbang bersifat tidak mengikat.
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Right Column: Decision Authority Card (4 cols) */}
-        <div className="min-[1100px]:col-span-4 space-y-6 w-full min-w-0">
+        {/* Right Column: Status Gerbang & Saran Rekomendasi (4 cols) */}
+        <div className="min-[1100px]:col-span-4 space-y-5 w-full min-w-0">
           <div className="rounded-[14px] bg-[#F3F5EA] border border-[#C5CCAE] p-6 shadow-xs space-y-5">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B7753] block mb-1.5">
-                Status Keputusan Verifikasi Dinas/Pendamping
+                Status Gerbang Keputusan
               </span>
 
               {/* Status Banner */}
               <div
                 className={`p-4 rounded-[12px] border flex items-start gap-3 ${
-                  gateStatusText === 'SIAP DILANJUTKAN'
-                    ? 'bg-[#E2F0E4] border-[#C2E0C5] text-[#27602C]'
-                    : gateStatusText === 'KEMBALIKAN KE PENDAMPINGAN'
-                    ? 'bg-[#F9DFDC] border-[#ECAAA4] text-[#8B281B]'
-                    : 'bg-[#F6E7BD] border-[#EED38A] text-[#825708]'
+                  gateCanProceed
+                    ? 'bg-[#EBF7F1] border-[#C1E7D4] text-[#147A4B]'
+                    : 'bg-[#FEF6E9] border-[#FCDCA7] text-[#96600E]'
                 }`}
               >
                 <span className="material-symbols-outlined text-[24px] shrink-0 mt-0.5">
-                  {gateStatusText === 'SIAP DILANJUTKAN'
-                    ? 'task_alt'
-                    : gateStatusText === 'KEMBALIKAN KE PENDAMPINGAN'
-                    ? 'cancel'
-                    : 'hourglass_top'}
+                  {gateCanProceed ? 'task_alt' : 'pending_actions'}
                 </span>
                 <div>
-                  <h4 className="text-[14px] font-black leading-snug">{gateStatusText}</h4>
-                  <p className="text-[12px] opacity-90 mt-0.5 leading-relaxed">
-                    {gateStatusText === 'SIAP DILANJUTKAN' &&
-                      'Semua syarat terpenuhi lengkap. Otorisasi rekomendasi penerbitan SPK siap dicairkan.'}
-                    {gateStatusText === 'KEMBALIKAN KE PENDAMPINGAN' &&
-                      'Skor di bawah 61 poin. Desa dikembalikan ke fase pembinaan intensif & perbaikan tata kelola.'}
-                    {gateStatusText.startsWith('MENUNGGU') &&
-                      'Analisis teknis & ekonomi valid. Otorisasi terkunci hingga Berita Acara Musdes disahkan.'}
+                  <h4 className="text-[15px] font-black leading-snug">{gateChecklist.statusText}</h4>
+                  <p className="text-[12px] opacity-90 mt-1 leading-relaxed">
+                    {gateCanProceed
+                      ? 'Kelima prasyarat mutlak telah terpenuhi. Dokumen siap diajukan ke musyawarah desa untuk pembahasan SPK dan pembagian tanggung jawab.'
+                      : `Masih terdapat ${missingCount} prasyarat yang belum lengkap. Lakukan pendampingan bersama sebelum mengambil komitmen fisik.`}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Completeness Metric */}
-            <div className="p-4 rounded-[12px] bg-[#FAFBF4] border border-[#C5CCAE] flex items-center justify-between">
-              <div>
-                <span className="text-[11px] font-bold text-[#6B7753] block">
-                  Kelengkapan Syarat
-                </span>
-                <div className="text-[26px] font-black text-[#1F2A14]">
-                  <CountUpNumber value={percentComplete} />%{' '}
-                  <span className="text-[13px] font-semibold text-[#6B7753]">
-                    (<CountUpNumber value={gateChecklist.passedCount} />/<CountUpNumber value={gateChecklist.totalCount} />)
-                  </span>
-                </div>
-              </div>
-              <div className="w-12 h-12 rounded-full border-4 border-[#4B5D2A] border-t-[#D3D9BE] flex items-center justify-center font-bold text-[12px] text-[#4B5D2A]">
-                <CountUpNumber value={gateChecklist.passedCount} />/5
-              </div>
+            {/* Saran Rekomendasi Khusus Desa Aktif */}
+            <div className="p-4 rounded-[12px] bg-white border border-[#C5CCAE]">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#4B5D2A] block mb-1">
+                Saran Sistem untuk {activeVillage.name}:
+              </span>
+              <p className="text-[13px] font-bold text-[#1F2A14] leading-relaxed">
+                "{gateChecklist.saranRekomendasi}"
+              </p>
             </div>
 
-            {/* Rationale */}
-            <div className="p-3.5 rounded-[12px] bg-[#FAFBF4] border border-[#C5CCAE] text-[12px] text-[#3A4728] leading-relaxed">
-              <strong className="text-[#1F2A14]">Rasional Rekomendasi:</strong> "Rekomendasi
-              teknis dan finansial telah diuji secara komprehensif. Pemasangan fisik PLTS komunal{' '}
-              {activeVillage.capacityKwp} kWp dapat diotorisasi setelah seluruh mufakat desa
-              dituangkan dalam dokumen resmi."
+            {/* Kelengkapan Prasyarat Progress */}
+            <div className="p-4 rounded-[12px] bg-white border border-[#C5CCAE] flex items-center justify-between">
+              <div>
+                <span className="text-[11px] font-bold text-[#6B7753] block">
+                  Pemenuhan Prasyarat
+                </span>
+                <div className="text-[22px] font-black text-[#1F2A14]">
+                  {gateChecklist.passedCount} dari 5
+                </div>
+              </div>
+              <div className="flex gap-1.5">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div
+                    key={i}
+                    className={`w-3.5 h-7 rounded-sm ${
+                      i <= gateChecklist.passedCount ? 'bg-[#2E7D32]' : 'bg-[#EAEFD9]'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="space-y-2.5 pt-2">
+            <div className="space-y-2.5 pt-1">
               <GradientButton
                 type="button"
-                disabled={!gateCanProceed}
-                onClick={() => setActivePage('jaga-watt')}
-                variant={gateCanProceed ? 'green-gold' : 'default'}
+                onClick={() => setActivePage('kelola-bersama')}
+                variant={gateCanProceed ? 'green' : 'green-outline'}
                 size="md"
-                className={`w-full py-3 px-4 font-bold text-[13px] flex items-center justify-center gap-2 transition-all ${
-                  gateCanProceed
-                    ? 'cursor-pointer shadow-xs'
-                    : 'opacity-50 cursor-not-allowed'
-                }`}
+                className="w-full py-2.5 px-4 font-bold text-[13px] flex items-center justify-center gap-2 cursor-pointer shadow-xs"
               >
                 <span className="material-symbols-outlined text-[18px]">
-                  {gateCanProceed ? 'done_all' : 'lock'}
+                  {gateCanProceed ? 'done_all' : 'checklist'}
                 </span>
-                <span>Lanjutkan ke Pemasangan (SPK)</span>
+                <span>{gateCanProceed ? 'Siap Lanjut ke Kelola Bersama' : 'Tinjau Rencana Kelola Bersama'}</span>
               </GradientButton>
 
               <GradientButton
@@ -634,108 +419,110 @@ export const GerbangKeputusan: React.FC = () => {
                 className="w-full py-2.5 px-4 font-bold text-[13px] flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
               >
                 <span className="material-symbols-outlined text-[18px]">undo</span>
-                <span>Kembalikan ke Pendampingan</span>
+                <span>Kembali ke Diagnosis Baca Desa</span>
               </GradientButton>
             </div>
 
-            {/* Sign-off Verifier */}
-            <div className="pt-4 border-t border-[#C5CCAE] flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-[#4B5D2A] text-[#F7F8EE] flex items-center justify-center font-bold text-[13px]">
-                BH
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[13px] font-bold text-[#1F2A14] truncate">
-                  {activeVillage.pendampingName}
-                </span>
-                <span className="text-[11px] text-[#6B7753] truncate">
-                  Tenaga Pendamping Lapangan / Tim Dinas
-                </span>
+            {/* Catatan Penanggung Jawab */}
+            <div className="pt-3 border-t border-[#C5CCAE] text-[11px] text-[#55633C] space-y-1">
+              <div><strong>Pendamping:</strong> {activeVillage.pendampingName}</div>
+              <div><strong>Pengurus:</strong> {activeVillage.pengurusName}</div>
+              <div className="italic pt-1 text-[10px] text-[#6B7753]">
+                *Data dan status prasyarat bersifat ilustratif untuk kebutuhan simulasi perencanaan.
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Benchmark Table for 3 Villages */}
+      {/* Komparasi Status 3 Desa Demo (Ilustratif) */}
       <div className="rounded-[14px] bg-[#F3F5EA] border border-[#C5CCAE] p-6 shadow-xs w-full min-w-0">
-        <h3 className="text-[16px] font-extrabold text-[#1F2A14] mb-3 flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#4B5D2A] text-[20px]">
-            compare_arrows
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <h3 className="text-[16px] font-black text-[#1F2A14] flex items-center gap-2">
+            <span className="material-symbols-outlined text-[#2E7D32] text-[20px]">
+              compare_arrows
+            </span>
+            <span>Komparasi Status Gerbang 3 Desa Binaan (Data Ilustratif)</span>
+          </h3>
+          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#EAEFD9] text-[#4B5D2A]">
+            Data ilustratif
           </span>
-          Benchmark Komparasi Gerbang Keputusan & Status 3 Desa Binaan
-        </h3>
+        </div>
 
         <div className="overflow-x-auto w-full">
           <table className="w-full min-w-[640px] text-left border-collapse text-[13px]">
             <thead>
               <tr className="bg-[#E4E8D6] text-[#6B7753] text-[11px] font-bold uppercase tracking-wider">
                 <th className="py-3 px-4 rounded-l-lg">Nama Desa</th>
-                <th className="py-3 px-4">Skor & Kategori</th>
-                <th className="py-3 px-4">Model Terpilih</th>
+                <th className="py-3 px-4">Profil Diagnosis</th>
                 <th className="py-3 px-4">Status Gerbang</th>
+                <th className="py-3 px-4">Saran Tindakan yang Tampil</th>
                 <th className="py-3 px-4 rounded-r-lg text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#C5CCAE]">
-              {(Object.keys(villages) as import('../types').VillageId[]).map((vId) => {
+            <tbody className="divide-y divide-[#C5CCAE] bg-white">
+              {(Object.keys(villages) as VillageId[]).map((vId) => {
                 const v = villages[vId];
-                const score = Object.values(v.indicators).reduce((a, b) => a + b, 0);
-                const cat = score <= 60 ? 'Rendah' : score <= 90 ? 'Menengah' : 'Tinggi';
                 const isCurrent = vId === selectedVillageId;
-
                 const gateInfo = calculateGateChecklist(vId);
-                const modelLabel = gateInfo.modelLabel;
-                const statusLabel = gateInfo.statusText;
-
-                const scoreColor =
-                  score >= 91 ? 'text-[#4C9A52]' : score >= 61 ? 'text-[#D99A1E]' : 'text-[#B84A3A]';
 
                 return (
                   <tr
                     key={vId}
                     className={`transition-colors ${
-                      isCurrent ? 'bg-[#E4E8D6]/60 font-semibold' : 'hover:bg-[#FAFBF4]'
+                      isCurrent ? 'bg-[#EBF7F1]/60 font-semibold' : 'hover:bg-[#FAFBF4]'
                     }`}
                   >
-                    <td className="py-3 px-4 font-bold text-[#1F2A14]">
+                    <td className="py-3.5 px-4 font-bold text-[#1F2A14]">
                       <div className="flex items-center gap-1.5">
                         <span>{v.name}</span>
                         {isCurrent && (
-                          <span className="text-[10px] bg-[#4B5D2A] text-[#F7F8EE] px-1.5 py-0.2 rounded font-normal">
+                          <span className="text-[10px] bg-[#2E7D32] text-white px-1.5 py-0.2 rounded font-normal">
                             Desa Aktif
                           </span>
                         )}
                       </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className={`font-bold ${scoreColor}`}>
-                        <CountUpNumber value={score} /> / 120 ({cat})
+                      <span className="text-[11px] text-[#6B7753] block font-normal">
+                        {v.connectionsKK} KK • {v.capacityKwp} kWp
                       </span>
                     </td>
-                    <td className="py-3 px-4 font-medium text-[#3A4728]">{modelLabel}</td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                        statusLabel.includes('SIAP')
-                          ? 'bg-[#E2F0E4] text-[#27602C]'
-                          : statusLabel.includes('KEMBALIKAN')
-                          ? 'bg-[#F9DFDC] text-[#8B281B]'
-                          : 'bg-[#F6E7BD] text-[#825708]'
-                      }`}>
-                        {statusLabel}
+
+                    <td className="py-3.5 px-4">
+                      {vId === 'sumber-makmur' && (
+                        <span className="text-[12px] font-semibold text-[#147A4B]">
+                          Sebagian besar Siap; 2 Perlu penguatan
+                        </span>
+                      )}
+                      {vId === 'tirta-mukti' && (
+                        <span className="text-[12px] font-semibold text-[#96600E]">
+                          Dimensi campuran (Siap & Perlu penguatan)
+                        </span>
+                      )}
+                      {vId === 'karang-asri' && (
+                        <span className="text-[12px] font-semibold text-[#B84A3A]">
+                          Sebagian besar Belum siap
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      <span
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${gateInfo.statusStyle}`}
+                      >
+                        {gateInfo.statusText}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
+
+                    <td className="py-3.5 px-4 text-[#3A4728] max-w-xs text-[12px]">
+                      {gateInfo.saranRekomendasi}
+                    </td>
+
+                    <td className="py-3.5 px-4 text-right">
                       <button
                         onClick={() => setSelectedVillageId(vId)}
-                        className={`text-[12px] font-bold hover:underline cursor-pointer ${
-                          score >= 91
-                            ? 'text-[#4C9A52]'
-                            : score >= 61
-                            ? 'text-[#D99A1E]'
-                            : 'text-[#B84A3A]'
-                        }`}
+                        className="text-[12px] font-bold text-[#2E7D32] hover:underline cursor-pointer"
                       >
-                        {score >= 91 ? 'Buka Detail' : score >= 61 ? 'Supervisi' : 'Intervensi'}
+                        {isCurrent ? 'Sedang Ditinjau' : 'Pilih Desa Ini'}
                       </button>
                     </td>
                   </tr>
@@ -746,7 +533,12 @@ export const GerbangKeputusan: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal Cetak / Simpan PDF Siap Cetak A4 */}
+      {/* Catatan Kaki Prinsip */}
+      <div className="w-full text-center py-2 text-[12px] text-[#6B7753] font-medium border-t border-[#C5CCAE]/60">
+        DesaWatt hanya membantu menyajikan sinyal dan bahan telaah. Keputusan akhir sepenuhnya ada pada musyawarah desa, pengurus koperasi, dan pendamping.
+      </div>
+
+      {/* Modal Cetak Laporan PDF */}
       <CetakLaporanModal
         isOpen={isPrintModalOpen}
         onClose={() => setIsPrintModalOpen(false)}

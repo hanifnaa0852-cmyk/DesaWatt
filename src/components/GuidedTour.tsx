@@ -32,25 +32,25 @@ export const GuidedTour: React.FC = () => {
       page: 'beranda',
       description:
         'Pantau feed telemetri real-time daya sesaat (kW), produksi harian kWh, rasio iuran warga terkumpul, estimasi emisi terhindar, serta kecukupan saldo dana cadangan O&M.',
-      tip: 'Kartu ringkasan di bagian bawah memungkinkan Anda membandingkan skor kesiapan antar desa binaan.',
+      tip: 'Kartu ringkasan di bagian bawah memungkinkan Anda membandingkan profil kesiapan antar desa binaan.',
     },
     {
-      title: 'Pilar 1: Baca Desa (Diagnostik 8 Indikator)',
-      badge: 'Menu 2 • Baca Desa',
+      title: 'Komponen 3: Baca Desa (Profil Diagnosis 8 Dimensi)',
+      badge: 'Komponen 3 • Baca Desa',
       icon: 'fact_check',
       page: 'baca-desa',
       description:
-        'Evaluasi mandiri kesiapan desa melalui 8 indikator kunci yang dipetakan ke dalam grafik radar 4 dimensi: Potensi Teknis, Beban Produktif, Kesiapan Fiskal, dan Tata Kelola Koperasi.',
-      tip: 'Skor agregat (0–120) otomatis menentukan rekomendasi model bisnis yang paling aman bagi desa.',
+        'Evaluasi mandiri kesiapan desa melalui 8 dimensi kualitatif sosial-teknis dan daftar kesenjangan otomatis yang perlu ditutup melalui pendampingan.',
+      tip: 'Profil diagnosis menyajikan model tata kelola yang disarankan sebagai bahan pertimbangan bagi pengurus & musyawarah desa.',
     },
     {
-      title: 'Pilar 2: Rancang Watt (Simulasi Model & Arus Kas)',
-      badge: 'Menu 3 • Rancang Watt',
+      title: 'Komponen 4: Rancang Watt (Simulasi Model & Arus Kas)',
+      badge: 'Komponen 4 • Rancang Watt',
       icon: 'solar_power',
       page: 'rancang-watt',
       description:
         'Pilih model kepemilikan aset (Milik Koperasi, Kemitraan JV, atau EaaS) dan uji ketahanan fiskal desa melalui simulasi arus kas 15–20 tahun dengan pelacak penggantian baterai di tahun ke-11.',
-      tip: 'Jika memilih model yang melebihi kesiapan desa, sistem akan memunculkan peringatan inkonsistensi.',
+      tip: 'Sistem menyajikan sinyal keselarasan model agar dapat dipertimbangkan bersama oleh musyawarah desa.',
     },
     {
       title: 'Gerbang Keputusan: Validasi Musdes & Kelayakan',
@@ -58,8 +58,8 @@ export const GuidedTour: React.FC = () => {
       icon: 'verified_user',
       page: 'gerbang-keputusan',
       description:
-        'Pintu verifikasi kelayakan mutlak 5 syarat sebelum dana desa atau APBN dialokasikan untuk pembangunan fisik PLTS. Mencegah komisioning terburu-buru tanpa komitmen musyawarah warga.',
-      tip: 'Semua 5 kriteria harus berstatus HIJAU agar surat rekomendasi kesiapan dapat dicetak.',
+        'Daftar periksa untuk ditinjau manusia (pengurus koperasi, pendamping, musyawarah desa) terhadap 5 syarat mutlak sebelum pembangunan fisik PLTS diputuskan.',
+      tip: 'Semua 5 kriteria menjadi daftar periksa peninjauan agar dokumen pertimbangan kesiapan dapat dicetak.',
     },
     {
       title: 'Pilar 3: Jaga Watt (M&E, Baterai & Cegah Mangkrak)',

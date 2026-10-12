@@ -1,10 +1,15 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useDesaWatt, INDICATOR_CONFIGS } from '../context/DesaWattContext';
-import { VillageId } from '../types';
+import React, { useState } from 'react';
+import { useDesaWatt, DIMENSION_CONFIGS } from '../context/DesaWattContext';
+import {
+  VillageId,
+  DimensionKey,
+  DimensionStatus,
+  EvidenceStatus,
+  DimensionState,
+  VillageData,
+} from '../types';
 import { GlowingMetricCard } from '@/components/ui/GlowingMetricCard';
-import { CountUpNumber, useCountUp } from '@/components/ui/CountUpNumber';
 import { GradientButton } from '@/components/ui/gradient-button';
-import { JalurNaikLevel } from '../components/JalurNaikLevel';
 import { CetakLaporanModal } from '../components/CetakLaporanModal';
 
 export const BacaDesa: React.FC = () => {
@@ -13,65 +18,130 @@ export const BacaDesa: React.FC = () => {
     selectedVillageId,
     setSelectedVillageId,
     villages,
-    updateIndicator,
-    totalScore,
+    updateDimension,
     readinessLevel,
-    recommendedModel,
-    lowestIndicators,
+    lowestDimensions,
     setActivePage,
+    addNewVillage,
   } = useDesaWatt();
 
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [isNewVillageModalOpen, setIsNewVillageModalOpen] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<'semua' | DimensionStatus>('semua');
 
-  // Radar chart calculation variables
-  const technicalScore =
-    activeVillage.indicators.potensi_surya + activeVillage.indicators.aksesibilitas; // Max 30
-  const productiveScore =
-    activeVillage.indicators.anchor_load + activeVillage.indicators.kepastian_pasar; // Max 30
-  const institutionalScore =
-    activeVillage.indicators.kapasitas_koperasi + activeVillage.indicators.partisipasi_warga; // Max 30
-  const financialScore =
-    activeVillage.indicators.kemampuan_bayar + activeVillage.indicators.dana_om; // Max 30
+  // State untuk form "Nilai Profil Desa Baru"
+  const [newVillageName, setNewVillageName] = useState('');
+  const [newVillageSubdistrict, setNewVillageSubdistrict] = useState('');
+  const [newVillageRegency, setNewVillageRegency] = useState('');
+  const [newVillageProvince, setNewVillageProvince] = useState('');
+  const [newVillageDimensions, setNewVillageDimensions] = useState<
+    Record<DimensionKey, DimensionState>
+  >({
+    potensi_teknis: { status: 'Perlu penguatan', verificationStatus: 'Belum diverifikasi', notes: '' },
+    kebutuhan_penggunaan: { status: 'Perlu penguatan', verificationStatus: 'Belum diverifikasi', notes: '' },
+    literasi_kapasitas: { status: 'Belum siap', verificationStatus: 'Belum diverifikasi', notes: '' },
+    partisipasi_inklusi: { status: 'Perlu penguatan', verificationStatus: 'Belum diverifikasi', notes: '' },
+    kelembagaan: { status: 'Belum siap', verificationStatus: 'Belum diverifikasi', notes: '' },
+    kelayakan_ekonomi: { status: 'Perlu penguatan', verificationStatus: 'Belum diverifikasi', notes: '' },
+    keberlanjutan_om: { status: 'Belum siap', verificationStatus: 'Belum diverifikasi', notes: '' },
+    data_akuntabilitas: { status: 'Perlu penguatan', verificationStatus: 'Belum diverifikasi', notes: '' },
+  });
 
-  // Animated scores for smooth SVG morphing
-  const animTechnical = useCountUp(technicalScore, 800);
-  const animProductive = useCountUp(productiveScore, 800);
-  const animInstitutional = useCountUp(institutionalScore, 800);
-  const animFinancial = useCountUp(financialScore, 800);
-  const animTotal = useCountUp(totalScore, 800);
+  // Hitung jumlah dimensi per status kualitatif
+  const currentDimensions = activeVillage?.dimensions || ({} as Record<DimensionKey, DimensionState>);
+  const allDimensionEntries = DIMENSION_CONFIGS.map((cfg) => ({
+    cfg,
+    state: currentDimensions[cfg.key] || {
+      status: 'Belum siap' as DimensionStatus,
+      verificationStatus: 'Belum diverifikasi' as EvidenceStatus,
+      notes: '',
+    },
+  }));
 
-  const maxCategory = 30;
-  const cx = 110;
-  const cy = 110;
-  const r = 80;
+  const countSiap = allDimensionEntries.filter((d) => d.state.status === 'Siap').length;
+  const countPerluPenguatan = allDimensionEntries.filter((d) => d.state.status === 'Perlu penguatan').length;
+  const countBelumSiap = allDimensionEntries.filter((d) => d.state.status === 'Belum siap').length;
+  const countTerverifikasi = allDimensionEntries.filter(
+    (d) => d.state.verificationStatus === 'Terverifikasi lapangan'
+  ).length;
 
-  const pTop = {
-    x: cx,
-    y: cy - (animTechnical / maxCategory) * r,
+  const filteredEntries =
+    filterStatus === 'semua'
+      ? allDimensionEntries
+      : allDimensionEntries.filter((d) => d.state.status === filterStatus);
+
+  const getStatusColorConfig = (status: DimensionStatus) => {
+    switch (status) {
+      case 'Siap':
+        return {
+          bgBadge: 'bg-[#EBF7F1] text-[#147A4B] border-[#C1E7D4]',
+          barColor: 'bg-[#2E7D32]',
+          ringColor: 'border-[#2E7D32]',
+          labelColor: 'text-[#147A4B]',
+          cardBorder: 'border-l-4 border-l-[#2E7D32]',
+          stepActive: 3,
+        };
+      case 'Perlu penguatan':
+        return {
+          bgBadge: 'bg-[#FEF6E9] text-[#96600E] border-[#FCDCA7]',
+          barColor: 'bg-[#D97706]',
+          ringColor: 'border-[#D97706]',
+          labelColor: 'text-[#96600E]',
+          cardBorder: 'border-l-4 border-l-[#D97706]',
+          stepActive: 2,
+        };
+      case 'Belum siap':
+      default:
+        return {
+          bgBadge: 'bg-[#FDF2F2] text-[#B84A3A] border-[#F8C3C3]',
+          barColor: 'bg-[#C2410C]',
+          ringColor: 'border-[#C2410C]',
+          labelColor: 'text-[#B84A3A]',
+          cardBorder: 'border-l-4 border-l-[#C2410C]',
+          stepActive: 1,
+        };
+    }
   };
-  const pRight = {
-    x: cx + (animProductive / maxCategory) * r,
-    y: cy,
-  };
-  const pBottom = {
-    x: cx,
-    y: cy + (animInstitutional / maxCategory) * r,
-  };
-  const pLeft = {
-    x: cx - (animFinancial / maxCategory) * r,
-    y: cy,
-  };
 
-  const polygonPoints = `${pTop.x},${pTop.y} ${pRight.x},${pRight.y} ${pBottom.x},${pBottom.y} ${pLeft.x},${pLeft.y}`;
+  const handleCreateVillage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newVillageName.trim()) return;
 
-  // Gauge calculation for Total Score (Max 120)
-  const gaugeCircumference = 2 * Math.PI * 42;
-  const gaugeOffset = gaugeCircumference - (animTotal / 120) * gaugeCircumference;
+    const newId: VillageId = `desa-${Date.now().toString().slice(-4)}`;
+    const newVillageObj: VillageData = {
+      id: newId,
+      name: newVillageName.trim(),
+      subdistrict: newVillageSubdistrict.trim() || 'Kecamatan Percontohan',
+      regency: newVillageRegency.trim() || 'Kabupaten Energi',
+      province: newVillageProvince.trim() || 'Indonesia',
+      capacityKwp: 40,
+      batteryKwh: 75,
+      connectionsKK: 120,
+      dimensions: newVillageDimensions,
+      prerequisites: {
+        keselamatan_instalasi: { checked: false, evidenceNote: '' },
+        proses_partisipasi: { checked: false, evidenceNote: '' },
+        rencana_om: { checked: false, evidenceNote: '' },
+        penanggung_jawab_operasi: { checked: false, evidenceNote: '' },
+        perlindungan_kelompok_rentan: { checked: false, evidenceNote: '' },
+      },
+      saranRekomendasi: 'Pendampingan diagnosis awal; lengkapi survei partisipatif warga.',
+      statusPLTS: 'Waspada',
+      statusDescription: 'Tahap inisiasi profil diagnosis desa baru.',
+      productionTodayKwh: 0,
+      collectionRatePercent: 0,
+      saldoDanaOMJuta: 0,
+      pengurusName: 'Pengurus Koperasi Desa',
+      pendampingName: 'Pendamping Desa',
+      technicianName: 'Calon Teknisi',
+      technicianPhone: '-',
+      targetBatteryFundJuta: 120,
+      musdesApproved: false,
+      pendampingAssigned: true,
+    };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 91) return '#4C9A52';
-    if (score >= 61) return '#D99A1E';
-    return '#B84A3A';
+    addNewVillage(newVillageObj);
+    setIsNewVillageModalOpen(false);
   };
 
   return (
@@ -79,25 +149,50 @@ export const BacaDesa: React.FC = () => {
       {/* Page Title & Breadcrumb */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 w-full min-w-0">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#E4E8D6] text-[#4B5D2A] border border-[#C5CCAE]">
-              Modul 1: Baca Desa • Diagnostik Komunal
+              Komponen 3 • Baca Desa
             </span>
             <span className="text-[#C5CCAE]">•</span>
-            <span className="text-[12px] font-semibold text-[#6B7753]">
-              Survei Kesiapan 8 Indikator (Maks. 120 Poin)
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#E8F0FE] text-[#1E3A8A] border border-[#BFDBFE]">
+              Didukung sistem
+            </span>
+            <span className="text-[#C5CCAE]">•</span>
+            <span className="px-2 py-0.5 rounded-sm text-[10px] font-bold bg-[#F1F3E9] text-[#6B7753] border border-[#D5DCBF]">
+              Data ilustratif
             </span>
           </div>
-          <h1 className="text-[28px] font-extrabold text-[#1F2A14] tracking-tight leading-tight">
-            Penilaian Mandiri Kesiapan Desa (Baca Desa)
+          <h1 className="text-[26px] sm:text-[28px] font-extrabold text-[#1F2A14] tracking-tight leading-tight">
+            Baca Desa: Profil Diagnosis & Daftar Kesenjangan
           </h1>
-          <p className="text-[14px] text-[#3A4728] mt-1 max-w-3xl leading-relaxed">
-            Diagnostik 4 dimensi komprehensif: Kelayakan teknis, beban produktif desa, kapasitas
-            kelembagaan koperasi, dan kepatuhan kas iuran masyarakat.
+          <p className="text-[13px] font-semibold text-[#4B5D2A] mt-0.5">
+            Hasil Baca Desa adalah PROFIL DIAGNOSIS kualitatif, BUKAN satu angka total dan BUKAN penerimaan/penolakan sepihak.
+          </p>
+          <p className="text-[14px] text-[#4A5736] mt-1 max-w-3xl leading-relaxed">
+            Menyajikan peta kesiapan sosial-teknis pada 8 dimensi utama. DesaWatt hanya membantu menyajikan sinyal;
+            status tiap dimensi diperiksa dan diperbarui manual oleh pendamping dan pengurus desa. Keputusan akhir
+            sepenuhnya berada pada warga dan musyawarah desa.
           </p>
         </div>
 
         <div className="flex items-center gap-3 shrink-0 flex-wrap">
+          <GradientButton
+            onClick={() => {
+              setNewVillageName('');
+              setNewVillageSubdistrict('');
+              setNewVillageRegency('');
+              setNewVillageProvince('');
+              setIsNewVillageModalOpen(true);
+            }}
+            variant="green"
+            size="md"
+            className="inline-flex items-center gap-2 cursor-pointer shadow-xs text-[13px] py-2.5 px-4 font-bold"
+            title="Tambah profil diagnosis desa baru"
+          >
+            <span className="material-symbols-outlined text-[18px]">add_circle</span>
+            <span>Nilai Desa Baru</span>
+          </GradientButton>
+
           <GradientButton
             onClick={() => setIsPrintModalOpen(true)}
             variant="green-outline"
@@ -106,16 +201,16 @@ export const BacaDesa: React.FC = () => {
             title="Buka laporan format cetak A4 1 halaman"
           >
             <span className="material-symbols-outlined text-[18px] text-[#4B5D2A]">print</span>
-            <span>Cetak / Simpan PDF</span>
+            <span>Cetak Profil PDF</span>
           </GradientButton>
 
           <GradientButton
-            onClick={() => setActivePage('rancang-watt')}
+            onClick={() => setActivePage('gerbang-keputusan')}
             variant="green"
             size="md"
-            className="inline-flex items-center gap-2 font-bold text-[13px] shadow-sm cursor-pointer group py-2.5 px-5"
+            className="inline-flex items-center gap-2 font-bold text-[13px] shadow-sm cursor-pointer group py-2.5 px-4"
           >
-            <span>Lanjut ke Rancang Watt</span>
+            <span>Gerbang Keputusan</span>
             <span className="material-symbols-outlined text-[18px] group-hover:translate-x-0.5 transition-transform">
               arrow_forward
             </span>
@@ -123,415 +218,366 @@ export const BacaDesa: React.FC = () => {
         </div>
       </div>
 
-      {/* Village Switcher Strip & Legend */}
-      <div className="bg-[#F3F5EA] p-4 rounded-[14px] border border-[#C5CCAE] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[12px] font-bold text-[#6B7753] uppercase tracking-wider mr-1">
-            Pilih Desa:
-          </span>
+      {/* Village Switcher Pills */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#F3F5EA] border border-[#C5CCAE] rounded-xl p-3 shadow-xs">
+        <div className="flex items-center gap-2 text-[12px] font-bold text-[#4B5D2A]">
+          <span className="material-symbols-outlined text-[18px] text-[#2E7D32]">location_city</span>
+          <span>Pilih Desa Binaan:</span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           {(Object.keys(villages) as VillageId[]).map((vId) => {
             const v = villages[vId];
-            const score = Object.values(v.indicators).reduce((a, b) => a + b, 0);
-            const isSelected = selectedVillageId === vId;
-            const dotColor =
-              score >= 91 ? 'bg-[#4C9A52]' : score >= 61 ? 'bg-[#D99A1E]' : 'bg-[#B84A3A]';
+            const isSelected = vId === selectedVillageId;
+            const values = Object.values(v.dimensions || {});
+            const readyCount = values.filter((d) => d.status === 'Siap').length;
+            const gapCount = values.filter((d) => d.status !== 'Siap').length;
 
             return (
               <button
                 key={vId}
                 onClick={() => setSelectedVillageId(vId)}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-[13px] font-bold transition-all cursor-pointer ${
+                className={`px-3 py-2 rounded-lg text-[12px] font-bold transition-all text-left flex items-center gap-2 cursor-pointer border ${
                   isSelected
-                    ? 'bg-[#4B5D2A] text-[#F7F8EE] shadow-xs'
-                    : 'bg-[#FAFBF4] text-[#3A4728] hover:bg-[#E4E8D6] border border-[#C5CCAE]'
+                    ? 'bg-[#2E7D32] text-white border-[#2E7D32] shadow-xs'
+                    : 'bg-white text-[#3A4728] border-[#D1D8BE] hover:bg-[#EAEFD9]'
                 }`}
               >
-                <span className={`w-2 h-2 rounded-full ${dotColor}`}></span>
                 <span>{v.name}</span>
                 <span
-                  className={`text-[11px] px-1.5 py-0.2 rounded-md ${
-                    isSelected ? 'bg-white/20 text-[#F7F8EE]' : 'bg-[#E4E8D6] text-[#3A4728]'
+                  className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
+                    isSelected ? 'bg-white/20 text-white' : 'bg-[#E4E8D6] text-[#4B5D2A]'
                   }`}
                 >
-                  <CountUpNumber value={score} />/120
+                  {readyCount} Siap • {gapCount} Kesenjangan
+                </span>
+                <span className="text-[9px] uppercase tracking-wider px-1 py-0.2 rounded bg-black/10">
+                  Data ilustratif
                 </span>
               </button>
             );
           })}
         </div>
+      </div>
 
-        <div className="flex items-center gap-4 text-[12px] text-[#6B7753] font-medium">
-          <span className="text-[#6B7753] font-bold uppercase tracking-wider text-[11px]">
-            Rentang Skor:
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#B84A3A]"></span>
-            <span>40–60 Rendah</span>
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#D99A1E]"></span>
-            <span>61–90 Menengah</span>
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#4C9A52]"></span>
-            <span>91–120 Tinggi</span>
-          </span>
+      {/* Hero Overview: Profil Diagnosis Kualitatif 8 Dimensi (Bukan Angka Total) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
+        {/* Kolom 1: Status Proporsi 8 Dimensi (Bar Horizontal 3 Tingkat) */}
+        <div className="lg:col-span-2 rounded-2xl bg-white border border-[#C5CCAE] p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B7753]">
+                  Diagnosis 8 Dimensi Desa
+                </span>
+                <h2 className="text-[18px] font-black text-[#1F2A14] mt-0.5">
+                  Profil Kesiapan: {activeVillage.name}
+                </h2>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-semibold text-[#6B7753]">Tingkat Kesiapan Umum:</span>
+                <span
+                  className={`px-2.5 py-1 rounded-full text-[12px] font-extrabold border ${
+                    readinessLevel === 'Tinggi'
+                      ? 'bg-[#EBF7F1] text-[#147A4B] border-[#C1E7D4]'
+                      : readinessLevel === 'Menengah'
+                      ? 'bg-[#FEF6E9] text-[#96600E] border-[#FCDCA7]'
+                      : 'bg-[#FDF2F2] text-[#B84A3A] border-[#F8C3C3]'
+                  }`}
+                >
+                  {readinessLevel}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-[13px] text-[#4A5736] mb-4 leading-relaxed">
+              Peta kesiapan komprehensif tanpa pembobotan sepihak. Menyoroti dimensi yang sudah matang
+              dan dimensi yang membutuhkan pendampingan lapangan sebelum musyawarah desa mengambil keputusan.
+            </p>
+
+            {/* Bagan Proporsi Batang Horizontal Berwarna 3 Tingkat */}
+            <div className="p-4 rounded-xl bg-[#F8F9F3] border border-[#E0E5D0] mb-4">
+              <div className="flex items-center justify-between text-[12px] font-bold mb-2">
+                <span className="text-[#3A4728]">Distribusi 8 Dimensi Sosial-Teknis</span>
+                <span className="text-[11px] font-semibold text-[#6B7753]">Total: 8 Dimensi</span>
+              </div>
+
+              {/* Batang Tersegmentasi Horizontal */}
+              <div className="w-full h-5 rounded-full overflow-hidden flex bg-[#EAEFD9] p-0.5 border border-[#D0D7BA]">
+                {countSiap > 0 && (
+                  <div
+                    style={{ width: `${(countSiap / 8) * 100}%` }}
+                    className="h-full bg-[#2E7D32] rounded-l-full transition-all duration-500 flex items-center justify-center text-[10px] text-white font-bold"
+                    title={`${countSiap} Dimensi Siap`}
+                  >
+                    {countSiap}
+                  </div>
+                )}
+                {countPerluPenguatan > 0 && (
+                  <div
+                    style={{ width: `${(countPerluPenguatan / 8) * 100}%` }}
+                    className="h-full bg-[#D97706] transition-all duration-500 flex items-center justify-center text-[10px] text-white font-bold"
+                    title={`${countPerluPenguatan} Dimensi Perlu Penguatan`}
+                  >
+                    {countPerluPenguatan}
+                  </div>
+                )}
+                {countBelumSiap > 0 && (
+                  <div
+                    style={{ width: `${(countBelumSiap / 8) * 100}%` }}
+                    className="h-full bg-[#C2410C] rounded-r-full transition-all duration-500 flex items-center justify-center text-[10px] text-white font-bold"
+                    title={`${countBelumSiap} Dimensi Belum Siap`}
+                  >
+                    {countBelumSiap}
+                  </div>
+                )}
+              </div>
+
+              {/* Legenda 3 Tingkat */}
+              <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-[#E5EAD5] text-center">
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-[#147A4B]">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#2E7D32]"></span>
+                    <span>Siap ({countSiap})</span>
+                  </div>
+                  <span className="text-[10px] text-[#6B7753] mt-0.5">Bukti memadai</span>
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-[#96600E]">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#D97706]"></span>
+                    <span>Perlu Penguatan ({countPerluPenguatan})</span>
+                  </div>
+                  <span className="text-[10px] text-[#6B7753] mt-0.5">Butuh pendampingan</span>
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-[#B84A3A]">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#C2410C]"></span>
+                    <span>Belum Siap ({countBelumSiap})</span>
+                  </div>
+                  <span className="text-[10px] text-[#6B7753] mt-0.5">Desain ulang/awal</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-[11px] text-[#55633C] pt-2 border-t border-[#F0F3E7]">
+            <span>Status Verifikasi: <strong>{countTerverifikasi} dari 8</strong> dimensi terverifikasi lapangan</span>
+            <span className="italic">Pembaruan manual oleh pengguna</span>
+          </div>
+        </div>
+
+        {/* Kolom 2: Catatan Prinsip & Ringkasan Aksi */}
+        <div className="rounded-2xl bg-[#F3F5EA] border border-[#C5CCAE] p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="material-symbols-outlined text-[#2E7D32] text-[20px]">psychology_alt</span>
+              <h3 className="text-[15px] font-black text-[#1F2A14]">
+                Prinsip Diagnostik DesaWatt
+              </h3>
+            </div>
+
+            <p className="text-[12px] text-[#4A5736] leading-relaxed mb-3">
+              DesaWatt hanya menyajikan sinyal diagnostik untuk melengkapi musyawarah warga. Sistem menyarankan langkah penguatan agar perencanaan transparan dan berkeadilan.
+            </p>
+
+            <div className="space-y-2 mb-4">
+              <div className="p-2.5 rounded-lg bg-white border border-[#D5DCBF] text-[12px]">
+                <div className="font-extrabold text-[#2E7D32] flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px]">groups</span>
+                  <span>Warga Ikut Menentukan</span>
+                </div>
+                <p className="text-[11px] text-[#55633C] mt-0.5">
+                  Hasil diagnosis dibawa ke forum Dengar Warga dan Musdes sebagai materi diskusi, bukan keputusan final.
+                </p>
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-white border border-[#D5DCBF] text-[12px]">
+                <div className="font-extrabold text-[#D97706] flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px]">build_circle</span>
+                  <span>Teknologi Mengikuti Kebutuhan</span>
+                </div>
+                <p className="text-[11px] text-[#55633C] mt-0.5">
+                  Kapasitas panel surya dan baterai disesuaikan dengan kurva beban produktif dan kemampuan bayar nyata warga.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-lg bg-[#EAEFD9] border border-[#C5CCAE] text-[11px] text-[#4B5D2A] flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px] text-[#2E7D32]">info</span>
+            <span>
+              Saran: Tutup seluruh kesenjangan melalui modul <strong>Dengar Warga</strong> dan <strong>Belajar Energi</strong> sebelum melangkah ke Gerbang Keputusan.
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Aggregate Score & Overview Grid */}
-      <div className="grid grid-cols-1 min-[1100px]:grid-cols-12 gap-6 items-stretch w-full min-w-0">
-        {/* Left Column: Gauge & Level narrative (5 cols) */}
-        <div className="min-[1100px]:col-span-5 bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs flex flex-col justify-between min-w-0">
+      {/* Bagian 1: 8 Dimensi Diagnosis Kualitatif (Pemeriksaan Manual Dropdown) */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[12px] font-bold uppercase tracking-wider text-[#6B7753]">
-                Evaluasi Agregat
-              </span>
-              <span
-                className={`px-3 py-1 rounded-full text-[12px] font-extrabold flex items-center gap-1.5 border ${
-                  readinessLevel === 'Tinggi'
-                    ? 'bg-[#E2F0E4] text-[#27602C] border-[#C2E0C5]'
-                    : readinessLevel === 'Menengah'
-                    ? 'bg-[#F6E7BD] text-[#825708] border-[#EED38A]'
-                    : 'bg-[#F9DFDC] text-[#8B281B] border-[#ECAAA4]'
+            <h2 className="text-[20px] font-black text-[#1F2A14] flex items-center gap-2">
+              <span className="material-symbols-outlined text-[#2E7D32] text-[22px]">checklist</span>
+              <span>8 Dimensi Diagnosis Kesiapan Sosial-Teknis</span>
+            </h2>
+            <p className="text-[13px] text-[#55633C]">
+              Ubah status kualitatif dan status verifikasi bukti secara manual lewat dropdown di bawah ini sesuai fakta lapangan.
+            </p>
+          </div>
+
+          {/* Filter Status */}
+          <div className="flex items-center gap-1.5 bg-[#F3F5EA] p-1 rounded-lg border border-[#C5CCAE] shrink-0">
+            <span className="text-[11px] font-bold text-[#6B7753] px-2">Filter:</span>
+            {(['semua', 'Siap', 'Perlu penguatan', 'Belum siap'] as const).map((st) => (
+              <button
+                key={st}
+                onClick={() => setFilterStatus(st)}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                  filterStatus === st
+                    ? 'bg-[#2E7D32] text-white shadow-xs'
+                    : 'text-[#4B5D2A] hover:bg-[#E4E8D6]'
                 }`}
               >
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    readinessLevel === 'Tinggi'
-                      ? 'bg-[#4C9A52]'
-                      : readinessLevel === 'Menengah'
-                      ? 'bg-[#D99A1E]'
-                      : 'bg-[#B84A3A]'
-                  }`}
-                ></span>
-                Level {readinessLevel}
-              </span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center gap-6 my-3 min-w-0">
-              {/* Radial Donut Gauge with Army / Olive accents */}
-              <div className="relative w-32 h-32 shrink-0 flex items-center justify-center">
-                <svg className="w-32 h-32 -rotate-90" viewBox="0 0 100 100">
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="42"
-                    fill="transparent"
-                    stroke="#D3D9BE"
-                    strokeWidth="10"
-                  />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="42"
-                    fill="transparent"
-                    stroke={getScoreColor(totalScore)}
-                    strokeWidth="10"
-                    strokeDasharray={gaugeCircumference}
-                    strokeDashoffset={gaugeOffset}
-                    strokeLinecap="round"
-                    className="transition-all duration-300 ease-out"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                  <span className="text-[32px] font-black text-[#1F2A14] tracking-tight leading-none">
-                    <CountUpNumber value={totalScore} />
-                  </span>
-                  <span className="text-[11px] font-bold text-[#6B7753] uppercase tracking-wider mt-1">
-                    DARI 120
-                  </span>
-                </div>
-              </div>
-
-              {/* Assessment Narrative */}
-              <div className="flex flex-col gap-1.5">
-                <h3 className="text-[18px] font-bold text-[#1F2A14] leading-snug">
-                  {readinessLevel === 'Tinggi' && 'Kategori TINGGI (Mandiri Siap Kelola)'}
-                  {readinessLevel === 'Menengah' && 'Kategori MENENGAH (Kemitraan/EaaS)'}
-                  {readinessLevel === 'Rendah' && 'Kategori RENDAH (Pendampingan Khusus)'}
-                </h3>
-                <p className="text-[13px] text-[#3A4728] leading-relaxed">
-                  {readinessLevel === 'Tinggi' &&
-                    'Desa dinilai sangat siap secara organisasi, permodalan awal, dan komitmen iuran warga untuk mengoperasikan PLTS mandiri di bawah kelolaan Koperasi Desa.'}
-                  {readinessLevel === 'Menengah' &&
-                    'Desa memiliki modal sosial dan beban potensial memadai, namun membutuhkan penguatan tata kelola melalui model Kemitraan bertahap.'}
-                  {readinessLevel === 'Rendah' &&
-                    'Desa belum disarankan belanja modal besar mandiri; disarankan fokus pada intervensi pendampingan intensif & perbaikan kelembagaan.'}
-                </p>
-                <div className="pt-1">
-                  {(() => {
-                    const recThreshold = recommendedModel === 'milik_koperasi' ? 91 : 61;
-                    const recModelName =
-                      recommendedModel === 'milik_koperasi' ? 'Milik Koperasi' : 'Kemitraan/EaaS';
-                    const diffToThreshold = totalScore - recThreshold;
-
-                    if (diffToThreshold >= 0) {
-                      return (
-                        <span className="text-[12px] font-bold text-[#4C9A52] inline-flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">trending_up</span>
-                          +<CountUpNumber value={diffToThreshold} /> poin di atas ambang model {recModelName} ({recThreshold})
-                        </span>
-                      );
-                    } else {
-                      return (
-                        <span className="text-[12px] font-bold text-[#B84A3A] inline-flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">warning</span>
-                          −<CountUpNumber value={Math.abs(diffToThreshold)} /> poin di bawah ambang model {recModelName} ({recThreshold})
-                        </span>
-                      );
-                    }
-                  })()}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Metrics Breakdown */}
-          <div className="grid grid-cols-3 gap-2.5 pt-4 border-t border-[#C5CCAE] text-center mt-4">
-            <div className="bg-[#FAFBF4] p-2.5 rounded-[12px] border border-[#C5CCAE]">
-              <span className="text-[11px] font-bold text-[#6B7753] block">Kesiapan Teknis</span>
-              <span className="text-[15px] font-black text-[#1F2A14]">
-                <CountUpNumber value={technicalScore} />/30 Pts
-              </span>
-            </div>
-            <div className="bg-[#FAFBF4] p-2.5 rounded-[12px] border border-[#C5CCAE]">
-              <span className="text-[11px] font-bold text-[#6B7753] block">Beban Produktif</span>
-              <span className="text-[15px] font-black text-[#1F2A14]">
-                <CountUpNumber value={productiveScore} />/30 Pts
-              </span>
-            </div>
-            <div className="bg-[#FAFBF4] p-2.5 rounded-[12px] border border-[#C5CCAE]">
-              <span className="text-[11px] font-bold text-[#6B7753] block">Kesiapan Fiskal</span>
-              <span className="text-[15px] font-black text-[#1F2A14]">
-                <CountUpNumber value={financialScore} />/30 Pts
-              </span>
-            </div>
+                {st === 'semua' ? 'Semua (8)' : st}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Right Column: 4-Dimension Radar Chart & Visuals (7 cols) */}
-        <div className="min-[1100px]:col-span-7 bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs flex flex-col md:flex-row items-center gap-6 min-w-0">
-          {/* Radar Chart SVG with Grid #D3D9BE and labels #6B7753 */}
-          <div className="relative w-56 h-56 shrink-0 flex items-center justify-center">
-            <svg className="w-56 h-56 overflow-visible" viewBox="0 0 220 220">
-              {/* Background Concentric Polygons */}
-              {[10, 20, 30].map((step) => {
-                const stepR = (step / maxCategory) * r;
-                return (
-                  <polygon
-                    key={step}
-                    points={`
-                      ${cx},${cy - stepR} 
-                      ${cx + stepR},${cy} 
-                      ${cx},${cy + stepR} 
-                      ${cx - stepR},${cy}
-                    `}
-                    fill="none"
-                    stroke="#D3D9BE"
-                    strokeWidth="1"
-                    strokeDasharray={step === 30 ? 'none' : '2 2'}
-                  />
-                );
-              })}
-
-              {/* Cross Axes with #D3D9BE */}
-              <line x1={cx} y1={cy - r} x2={cx} y2={cy + r} stroke="#D3D9BE" strokeWidth="1" />
-              <line x1={cx - r} y1={cy} x2={cx + r} y2={cy} stroke="#D3D9BE" strokeWidth="1" />
-
-              {/* Data Polygon with #4B5D2A */}
-              <polygon
-                points={polygonPoints}
-                fill={getScoreColor(totalScore)}
-                fillOpacity="0.25"
-                stroke={getScoreColor(totalScore)}
-                strokeWidth="2.5"
-                strokeLinejoin="round"
-                className="transition-all duration-300"
-              />
-
-              {/* Vertex Dots */}
-              <circle cx={pTop.x} cy={pTop.y} r="4" fill={getScoreColor(totalScore)} />
-              <circle cx={pRight.x} cy={pRight.y} r="4" fill={getScoreColor(totalScore)} />
-              <circle cx={pBottom.x} cy={pBottom.y} r="4" fill={getScoreColor(totalScore)} />
-              <circle cx={pLeft.x} cy={pLeft.y} r="4" fill={getScoreColor(totalScore)} />
-
-              {/* Labels in #6B7753 */}
-              <text
-                x={cx}
-                y={cy - r - 10}
-                textAnchor="middle"
-                className="text-[10px] font-extrabold fill-[#6B7753]"
-              >
-                Potensi Teknis ({technicalScore})
-              </text>
-              <text
-                x={cx + r + 10}
-                y={cy + 4}
-                textAnchor="start"
-                className="text-[10px] font-extrabold fill-[#6B7753]"
-              >
-                Beban ({productiveScore})
-              </text>
-              <text
-                x={cx}
-                y={cy + r + 16}
-                textAnchor="middle"
-                className="text-[10px] font-extrabold fill-[#6B7753]"
-              >
-                Kelembagaan ({institutionalScore})
-              </text>
-              <text
-                x={cx - r - 10}
-                y={cy + 4}
-                textAnchor="end"
-                className="text-[10px] font-extrabold fill-[#6B7753]"
-              >
-                Keuangan ({financialScore})
-              </text>
-            </svg>
-          </div>
-
-          {/* Diagnostic interpretation */}
-          <div className="flex-1 space-y-3.5 w-full">
-            <h4 className="text-[15px] font-extrabold text-[#1F2A14]">
-              Profil Kesiapan 4 Dimensi ({activeVillage.name})
-            </h4>
-
-            <div className="space-y-2 text-[12px]">
-              <div>
-                <div className="flex justify-between font-bold text-[#3A4728] mb-1">
-                  <span>1. Kelayakan Teknis (Lahan & Radiasi)</span>
-                  <span className="text-[#4B5D2A] font-black">
-                    <CountUpNumber value={technicalScore} /> / 30
-                  </span>
-                </div>
-                <div className="w-full bg-[#D3D9BE] h-2 rounded-full overflow-hidden">
-                  <div
-                    className="bg-[#4B5D2A] h-full rounded-full transition-all duration-700"
-                    style={{ width: `${(technicalScore / 30) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between font-bold text-[#3A4728] mb-1">
-                  <span>2. Beban Produktif Siang Hari</span>
-                  <span className="text-[#825708] font-black">
-                    <CountUpNumber value={productiveScore} /> / 30
-                  </span>
-                </div>
-                <div className="w-full bg-[#D3D9BE] h-2 rounded-full overflow-hidden">
-                  <div
-                    className="bg-[#E0A526] h-full rounded-full transition-all duration-700"
-                    style={{ width: `${(productiveScore / 30) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between font-bold text-[#3A4728] mb-1">
-                  <span>3. Kelembagaan & Legalitas Koperasi</span>
-                  <span className="text-[#4C9A52] font-black">
-                    <CountUpNumber value={institutionalScore} /> / 30
-                  </span>
-                </div>
-                <div className="w-full bg-[#D3D9BE] h-2 rounded-full overflow-hidden">
-                  <div
-                    className="bg-[#4C9A52] h-full rounded-full transition-all duration-700"
-                    style={{ width: `${(institutionalScore / 30) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between font-bold text-[#3A4728] mb-1">
-                  <span>4. Kapasitas Iuran & Dana Cadangan</span>
-                  <span className="text-[#4B5D2A] font-black">
-                    <CountUpNumber value={financialScore} /> / 30
-                  </span>
-                </div>
-                <div className="w-full bg-[#D3D9BE] h-2 rounded-full overflow-hidden">
-                  <div
-                    className="bg-[#4B5D2A] h-full rounded-full transition-all duration-700"
-                    style={{ width: `${(financialScore / 30) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-3 bg-[#FAFBF4] rounded-[12px] border border-[#C5CCAE] flex items-start gap-2.5 text-[11px]">
-              <span className="material-symbols-outlined text-[#4B5D2A] text-[18px] mt-0.5">
-                verified
-              </span>
-              <div>
-                <span className="text-[13px] font-bold text-[#1F2A14] block">
-                  Status Legalitas & Regulasi Desa
-                </span>
-                <span className="text-[12px] text-[#6B7753]">
-                  Verifikasi Dinas/Pendamping: Terdaftar resmi BUMDes / Koperasi Desa Merah Putih.
-                </span>
-              </div>
-            </div>
-
-            <div className="p-3 bg-[#E4E8D6] rounded-[12px] border border-[#C5CCAE] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#4B5D2A] text-[18px]">
-                  groups
-                </span>
-                <span className="text-[12px] font-bold text-[#4B5D2A]">
-                  Persetujuan Komitmen Iuran Warga
-                </span>
-              </div>
-              <span className="text-[12px] font-black text-[#4B5D2A]">
-                <CountUpNumber value={activeVillage.collectionRatePercent} />% Komitmen
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Callout: "Indikator yang menahan skor" (Lowest Indicators Alert) in warm amber */}
-      <div className="bg-[#F6E7BD] border border-[#EED38A] rounded-[14px] p-5 shadow-xs">
-        <div className="flex items-center gap-2.5 mb-3">
-          <div className="w-8 h-8 rounded-lg bg-[#E0A526] text-[#1F2A14] flex items-center justify-center font-bold">
-            <span className="material-symbols-outlined text-[20px]">troubleshoot</span>
-          </div>
-          <div>
-            <h3 className="text-[15px] font-extrabold text-[#825708]">
-              Indikator yang Menahan Skor ({activeVillage.name})
-            </h3>
-            <p className="text-[12px] text-[#7A4F06]">
-              Fokus intervensi prioritas sebelum eksekusi fisik atau pengajuan pembiayaan:
-            </p>
-          </div>
-        </div>
-
+        {/* Grid 8 Kartu Dimensi */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {lowestIndicators.map((ind) => {
-            const currentVal = activeVillage.indicators[ind.key];
-            const optLabel = ind.options[currentVal].label;
+          {filteredEntries.map(({ cfg, state }) => {
+            const colors = getStatusColorConfig(state.status);
+            const isVerified = state.verificationStatus === 'Terverifikasi lapangan';
 
             return (
               <div
-                key={ind.key}
-                className="bg-[#FAFBF4] p-4 rounded-[12px] border border-[#EED38A] flex flex-col justify-between shadow-xs"
+                key={cfg.key}
+                className={`rounded-xl bg-white border border-[#D5DCBF] ${colors.cardBorder} p-4 sm:p-5 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow`}
               >
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[12px] font-bold text-[#825708] uppercase tracking-wider">
-                      {ind.category} • Indikator {ind.number}
-                    </span>
-                    <span className="px-2 py-0.5 rounded text-[11px] font-black bg-[#F6E7BD] text-[#825708] border border-[#EED38A]">
-                      Skor: <CountUpNumber value={currentVal} /> / 15 ({optLabel})
+                  {/* Top Bar Dimensi: Nomor, Judul, Status Kualitatif */}
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-md bg-[#F1F3E9] text-[#4B5D2A] text-[11px] font-black flex items-center justify-center border border-[#D1D8BE]">
+                        {cfg.number}
+                      </span>
+                      <h3 className="text-[15px] font-black text-[#1F2A14] leading-snug">
+                        {cfg.title}
+                      </h3>
+                    </div>
+
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold border shrink-0 ${colors.bgBadge}`}
+                    >
+                      {state.status}
                     </span>
                   </div>
-                  <h4 className="text-[14px] font-extrabold text-[#1F2A14]">{ind.name}</h4>
-                  <p className="text-[12px] text-[#3A4728] mt-1 leading-relaxed">
-                    <strong className="text-[#1F2A14]">Tindakan Rekomendasi:</strong>{' '}
-                    {ind.recommendationIfLow}
+
+                  {/* Visual 3-Level Step Indicator Bar */}
+                  <div className="grid grid-cols-3 gap-1 my-2.5">
+                    <div
+                      className={`h-1.5 rounded-full ${
+                        colors.stepActive >= 1 ? 'bg-[#C2410C]' : 'bg-[#EAEFD9]'
+                      }`}
+                      title="Tingkat 1: Belum Siap"
+                    />
+                    <div
+                      className={`h-1.5 rounded-full ${
+                        colors.stepActive >= 2 ? 'bg-[#D97706]' : 'bg-[#EAEFD9]'
+                      }`}
+                      title="Tingkat 2: Perlu Penguatan"
+                    />
+                    <div
+                      className={`h-1.5 rounded-full ${
+                        colors.stepActive >= 3 ? 'bg-[#2E7D32]' : 'bg-[#EAEFD9]'
+                      }`}
+                      title="Tingkat 3: Siap"
+                    />
+                  </div>
+
+                  {/* Bukti Minimum yang Perlu Diperiksa (Mandatori Prompt 3A) */}
+                  <div className="p-2.5 rounded-lg bg-[#F8F9F4] border border-[#E3E8D3] mb-3">
+                    <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-[#4B5D2A] mb-0.5">
+                      <span className="material-symbols-outlined text-[15px] text-[#2E7D32]">verified</span>
+                      <span>Satu Kalimat Bukti Minimum:</span>
+                    </div>
+                    <p className="text-[12px] font-semibold text-[#1F2A14] leading-relaxed">
+                      Bukti: {cfg.evidenceMinimum}
+                    </p>
+                  </div>
+
+                  {/* Deskripsi Aspek */}
+                  <p className="text-[12px] text-[#55633C] leading-relaxed mb-3">
+                    {cfg.description}
                   </p>
+
+                  {/* Catatan Lapangan Aktif */}
+                  {state.notes && (
+                    <div className="p-2.5 rounded-md bg-[#FFFBEB] border border-[#FDE68A] text-[11px] text-[#92400E] mb-3 flex items-start gap-1.5">
+                      <span className="material-symbols-outlined text-[15px] text-[#D97706] shrink-0 mt-0.5">edit_note</span>
+                      <span><strong>Catatan lapangan:</strong> {state.notes}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Dropdown Kontrol Manual oleh Pengguna (Pendamping / Pengurus) */}
+                <div className="pt-3 border-t border-[#EAEFD9] mt-2">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-[#6B7753] mb-1.5">
+                    <span>Perbarui Status (Manual):</span>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-extrabold border ${
+                        isVerified
+                          ? 'bg-[#EBF7F1] text-[#147A4B] border-[#C1E7D4]'
+                          : 'bg-[#FEF6E9] text-[#96600E] border-[#FCDCA7]'
+                      }`}
+                    >
+                      {state.verificationStatus}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {/* Dropdown 1: Status Kualitatif Dimensi */}
+                    <div>
+                      <label className="block text-[10px] font-semibold text-[#6B7753] mb-0.5">
+                        Status Kesiapan:
+                      </label>
+                      <select
+                        value={state.status}
+                        onChange={(e) =>
+                          updateDimension(selectedVillageId, cfg.key, {
+                            status: e.target.value as DimensionStatus,
+                          })
+                        }
+                        className="w-full text-[12px] font-bold py-1.5 px-2 rounded-lg bg-white border border-[#C5CCAE] text-[#1F2A14] focus:outline-hidden focus:ring-2 focus:ring-[#2E7D32] cursor-pointer"
+                      >
+                        <option value="Siap">Siap (Hijau)</option>
+                        <option value="Perlu penguatan">Perlu penguatan (Amber)</option>
+                        <option value="Belum siap">Belum siap (Bata)</option>
+                      </select>
+                    </div>
+
+                    {/* Dropdown 2: Status Verifikasi Bukti */}
+                    <div>
+                      <label className="block text-[10px] font-semibold text-[#6B7753] mb-0.5">
+                        Status Bukti:
+                      </label>
+                      <select
+                        value={state.verificationStatus}
+                        onChange={(e) =>
+                          updateDimension(selectedVillageId, cfg.key, {
+                            verificationStatus: e.target.value as EvidenceStatus,
+                          })
+                        }
+                        className="w-full text-[12px] font-bold py-1.5 px-2 rounded-lg bg-white border border-[#C5CCAE] text-[#1F2A14] focus:outline-hidden focus:ring-2 focus:ring-[#2E7D32] cursor-pointer"
+                      >
+                        <option value="Terverifikasi lapangan">Terverifikasi lapangan</option>
+                        <option value="Belum diverifikasi">Belum diverifikasi</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </div>
             );
@@ -539,224 +585,245 @@ export const BacaDesa: React.FC = () => {
         </div>
       </div>
 
-      {/* JALUR NAIK LEVEL: Intervensi Simulasi Indikator Menahan Skor */}
-      <JalurNaikLevel />
-
-      {/* 8 Indicators Assessment Matrix */}
-      <div className="bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-[#C5CCAE] gap-2 mb-6">
+      {/* Bagian 2: Daftar Kesenjangan yang Perlu Ditutup (Otomatis dari Dimensi yang bukan "Siap") */}
+      <div className="rounded-2xl bg-white border border-[#C5CCAE] p-5 sm:p-6 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-[#EAEFD9]">
           <div>
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#4B5D2A] text-[24px]">
-                checklist
-              </span>
-              <h2 className="text-[20px] font-extrabold text-[#1F2A14]">
-                Matriks 8 Indikator Kesiapan Komunal
+              <span className="material-symbols-outlined text-[#D97706] text-[24px]">assignment_late</span>
+              <h2 className="text-[18px] sm:text-[20px] font-black text-[#1F2A14]">
+                Daftar Kesenjangan yang Perlu Ditutup
               </h2>
             </div>
-            <p className="text-[13px] text-[#6B7753] mt-0.5">
-              Klik salah satu opsi (5 / 10 / 15) pada tiap indikator untuk menguji simulasi kesiapan
-              desa secara langsung.
+            <p className="text-[13px] text-[#55633C] mt-0.5">
+              Otomatis dihasilkan dari dimensi yang berstatus <strong>Perlu penguatan</strong> atau <strong>Belum siap</strong> pada {activeVillage.name}.
             </p>
           </div>
-          <span className="text-[12px] font-bold text-[#6B7753]">
-            Total Bobot: 8 Indikator × Maks. 15 = 120 Poin
-          </span>
+
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 rounded-full text-[12px] font-extrabold bg-[#FEF6E9] text-[#96600E] border border-[#FCDCA7]">
+              {lowestDimensions.length} Kesenjangan Terdeteksi
+            </span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 min-[900px]:grid-cols-2 gap-5 w-full min-w-0">
-          {INDICATOR_CONFIGS.map((ind) => {
-            const currentValue = activeVillage.indicators[ind.key];
+        {lowestDimensions.length === 0 ? (
+          <div className="p-6 rounded-xl bg-[#EBF7F1] border border-[#C1E7D4] text-center flex flex-col items-center">
+            <span className="material-symbols-outlined text-[36px] text-[#147A4B] mb-2">check_circle</span>
+            <h3 className="text-[16px] font-extrabold text-[#147A4B]">
+              Seluruh 8 Dimensi Berada pada Status Siap!
+            </h3>
+            <p className="text-[13px] text-[#3D5A45] mt-1 max-w-xl">
+              Desa {activeVillage.name} telah memiliki bukti memadai pada seluruh dimensi.
+              Pastikan verifikasi lapangan tetap diperbarui dan bawa dokumen pendukung ke Gerbang Keputusan.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {lowestDimensions.map((cfg) => {
+              const state = currentDimensions[cfg.key];
+              const isBelumSiap = state?.status === 'Belum siap';
 
-            return (
-              <div
-                key={ind.key}
-                className="p-5 rounded-[12px] border border-[#C5CCAE] bg-[#FAFBF4] flex flex-col justify-between hover:border-[#4B5D2A] transition-all"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B7753]">
-                      INDIKATOR {ind.number} • {ind.category}
+              return (
+                <div
+                  key={cfg.key}
+                  className={`p-4 rounded-xl border flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all ${
+                    isBelumSiap
+                      ? 'bg-[#FEF2F2] border-[#FCA5A5]'
+                      : 'bg-[#FFFBEB] border-[#FDE68A]'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <span
+                      className={`w-7 h-7 rounded-lg text-[12px] font-black flex items-center justify-center shrink-0 mt-0.5 ${
+                        isBelumSiap ? 'bg-[#EF4444] text-white' : 'bg-[#D97706] text-white'
+                      }`}
+                    >
+                      {cfg.number}
                     </span>
-                    <span className="text-[16px] font-black text-[#4B5D2A]">
-                      <CountUpNumber value={currentValue} />{' '}
-                      <span className="text-[12px] text-[#6B7753] font-semibold">/15</span>
-                    </span>
-                  </div>
 
-                  <h3 className="text-[15px] font-extrabold text-[#1F2A14] leading-snug">
-                    {ind.name}
-                  </h3>
-                  <p className="text-[12px] text-[#6B7753] mt-1 mb-4 leading-relaxed">
-                    {ind.description}
-                  </p>
-                </div>
-
-                {/* 3 Selectable Buttons (5, 10, 15) */}
-                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[#C5CCAE]">
-                  {([5, 10, 15] as const).map((scoreVal) => {
-                    const isSelected = currentValue === scoreVal;
-                    const opt = ind.options[scoreVal];
-
-                    return (
-                      <button
-                        key={scoreVal}
-                        type="button"
-                        onClick={() => updateIndicator(selectedVillageId, ind.key, scoreVal)}
-                        className={`p-2.5 rounded-xl text-left transition-all cursor-pointer flex flex-col justify-between ${
-                          isSelected
-                            ? 'bg-[#4B5D2A] text-[#F7F8EE] shadow-xs'
-                            : 'bg-[#F3F5EA] hover:bg-[#E4E8D6] text-[#3A4728] border border-[#C5CCAE]'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <span
-                            className={`text-[12px] font-extrabold ${
-                              isSelected ? 'text-[#F7F8EE]' : 'text-[#1F2A14]'
-                            }`}
-                          >
-                            {opt.label}
-                          </span>
-                          <span
-                            className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
-                              isSelected
-                                ? 'bg-white/20 text-[#F7F8EE]'
-                                : 'bg-[#E4E8D6] text-[#3A4728]'
-                            }`}
-                          >
-                            {scoreVal}
-                          </span>
-                        </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="text-[15px] font-black text-[#1F2A14]">
+                          {cfg.title}
+                        </h4>
                         <span
-                          className={`text-[10px] mt-1.5 line-clamp-2 leading-tight ${
-                            isSelected ? 'text-[#D4DCBC]' : 'text-[#6B7753]'
+                          className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase border ${
+                            isBelumSiap
+                              ? 'bg-white text-[#B84A3A] border-[#F8C3C3]'
+                              : 'bg-white text-[#96600E] border-[#FCDCA7]'
                           }`}
                         >
-                          {opt.desc}
+                          Status: {state?.status || 'Belum siap'}
                         </span>
-                      </button>
-                    );
-                  })}
+                        <span className="text-[11px] text-[#6B7753]">
+                          • Bukti minimum: {cfg.evidenceMinimum}
+                        </span>
+                      </div>
+
+                      <p className="text-[12px] text-[#4A5736] mt-1 leading-relaxed">
+                        <strong>Rekomendasi Tindakan Lapangan:</strong> {cfg.gapActionSuggestion}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
+                    <button
+                      onClick={() => {
+                        // Tautan kontekstual ke modul pendampingan
+                        if (cfg.key === 'partisipasi_inklusi' || cfg.key === 'kebutuhan_penggunaan') {
+                          setActivePage('dengar-warga');
+                        } else if (cfg.key === 'literasi_kapasitas') {
+                          setActivePage('belajar-energi');
+                        } else if (cfg.key === 'kelayakan_ekonomi' || cfg.key === 'keberlanjutan_om') {
+                          setActivePage('rancang-watt');
+                        } else {
+                          setActivePage('kelola-bersama');
+                        }
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-white border border-[#C5CCAE] text-[#2E7D32] hover:bg-[#F3F5EA] text-[12px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                    >
+                      <span>Mulai Pendampingan</span>
+                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Modal Nilai Profil Desa Baru */}
+      {isNewVillageModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-[#C5CCAE] my-8">
+            <div className="flex items-center justify-between pb-3 border-b border-[#EAEFD9] mb-4">
+              <div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#F1F3E9] text-[#6B7753] border border-[#D5DCBF] uppercase">
+                  Data ilustratif
+                </span>
+                <h3 className="text-[18px] font-black text-[#1F2A14] mt-1">
+                  Tambah Profil Diagnosis Desa Baru
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsNewVillageModalOpen(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 text-gray-500"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateVillage} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#3A4728] mb-1">
+                    Nama Desa:
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Desa Sinar Harapan"
+                    value={newVillageName}
+                    onChange={(e) => setNewVillageName(e.target.value)}
+                    className="w-full text-[13px] px-3 py-2 rounded-lg border border-[#C5CCAE] focus:ring-2 focus:ring-[#2E7D32] focus:outline-hidden"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#3A4728] mb-1">
+                    Kecamatan:
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Kec. Rimbo Bujang"
+                    value={newVillageSubdistrict}
+                    onChange={(e) => setNewVillageSubdistrict(e.target.value)}
+                    className="w-full text-[13px] px-3 py-2 rounded-lg border border-[#C5CCAE] focus:ring-2 focus:ring-[#2E7D32] focus:outline-hidden"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#3A4728] mb-1">
+                    Kabupaten:
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Kab. Tebo"
+                    value={newVillageRegency}
+                    onChange={(e) => setNewVillageRegency(e.target.value)}
+                    className="w-full text-[13px] px-3 py-2 rounded-lg border border-[#C5CCAE] focus:ring-2 focus:ring-[#2E7D32] focus:outline-hidden"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#3A4728] mb-1">
+                    Provinsi:
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Jambi"
+                    value={newVillageProvince}
+                    onChange={(e) => setNewVillageProvince(e.target.value)}
+                    className="w-full text-[13px] px-3 py-2 rounded-lg border border-[#C5CCAE] focus:ring-2 focus:ring-[#2E7D32] focus:outline-hidden"
+                  />
                 </div>
               </div>
-            );
-          })}
-        </div>
-      </div>
 
-      {/* Benchmark Komparasi 3 Desa Table */}
-      <div className="bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs">
-        <div className="flex items-center justify-between pb-4 border-b border-[#C5CCAE] mb-4">
-          <div>
-            <h3 className="text-[17px] font-extrabold text-[#1F2A14] flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#4B5D2A] text-[20px]">
-                compare_arrows
-              </span>
-              Benchmark Komparasi 3 Desa Binaan (Kab. Mukomuko, Bengkulu)
-            </h3>
-            <p className="text-[12px] text-[#6B7753] mt-0.5">
-              Peta komparasi indikator kesiapan antar desa untuk memandu penugasan pendampingan
-              lapangan.
-            </p>
+              <div>
+                <h4 className="text-[13px] font-bold text-[#1F2A14] mb-2 pt-2 border-t border-[#EAEFD9]">
+                  Penetapan Status 8 Dimensi Awal (Kualitatif):
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
+                  {DIMENSION_CONFIGS.map((cfg) => (
+                    <div key={cfg.key} className="p-2 rounded-lg bg-[#F8F9F3] border border-[#E0E5D0]">
+                      <div className="text-[11px] font-bold text-[#1F2A14] truncate mb-1">
+                        {cfg.number}. {cfg.title}
+                      </div>
+                      <select
+                        value={newVillageDimensions[cfg.key]?.status || 'Perlu penguatan'}
+                        onChange={(e) =>
+                          setNewVillageDimensions((prev) => ({
+                            ...prev,
+                            [cfg.key]: {
+                              status: e.target.value as DimensionStatus,
+                              verificationStatus: 'Belum diverifikasi',
+                            },
+                          }))
+                        }
+                        className="w-full text-[11px] py-1 px-1.5 rounded bg-white border border-[#C5CCAE]"
+                      >
+                        <option value="Siap">Siap</option>
+                        <option value="Perlu penguatan">Perlu penguatan</option>
+                        <option value="Belum siap">Belum siap</option>
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-4 border-t border-[#EAEFD9]">
+                <button
+                  type="button"
+                  onClick={() => setIsNewVillageModalOpen(false)}
+                  className="px-4 py-2 rounded-lg border border-[#C5CCAE] text-[12px] font-bold text-[#55633C] hover:bg-gray-50"
+                >
+                  Batal
+                </button>
+                <GradientButton type="submit" variant="green" size="md">
+                  Simpan & Tampilkan Profil
+                </GradientButton>
+              </div>
+            </form>
           </div>
         </div>
+      )}
 
-        <div className="overflow-x-auto w-full">
-          <table className="w-full min-w-[640px] text-left border-collapse text-[13px]">
-            <thead>
-              <tr className="bg-[#E4E8D6] text-[#6B7753] text-[11px] font-bold uppercase tracking-wider">
-                <th className="py-3 px-4 rounded-l-lg">Indikator Penilaian (Maks. 15)</th>
-                <th className="py-3 px-4 text-center">
-                  Desa Karang Asri <span className="text-[#B84A3A] font-black">(55 - Rendah)</span>
-                </th>
-                <th className="py-3 px-4 text-center">
-                  Desa Tirta Mukti <span className="text-[#825708] font-black">(80 - Menengah)</span>
-                </th>
-                <th className="py-3 px-4 text-center rounded-r-lg">
-                  Desa Sumber Makmur <span className="text-[#4C9A52] font-black">(110 - Tinggi)</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#C5CCAE]">
-              {INDICATOR_CONFIGS.map((ind) => {
-                return (
-                  <tr key={ind.key} className="hover:bg-[#FAFBF4] transition-colors">
-                    <td className="py-3 px-4 font-semibold text-[#1F2A14]">
-                      {ind.number}. {ind.name}
-                    </td>
-                    <td className="py-3 px-4 text-center text-[#6B7753]">
-                      <CountUpNumber value={villages['karang-asri'].indicators[ind.key]} /> / 15
-                    </td>
-                    <td className="py-3 px-4 text-center text-[#6B7753]">
-                      <CountUpNumber value={villages['tirta-mukti'].indicators[ind.key]} /> / 15
-                    </td>
-                    <td className="py-3 px-4 text-center font-bold text-[#4B5D2A]">
-                      <CountUpNumber value={villages['sumber-makmur'].indicators[ind.key]} /> / 15
-                    </td>
-                  </tr>
-                );
-              })}
-              <tr className="bg-[#FAFBF4] font-extrabold text-[14px]">
-                <td className="py-3.5 px-4 text-[#1F2A14]">TOTAL SKOR KESIAPAN AKHIR</td>
-                <td className="py-3.5 px-4 text-center text-[#B84A3A]">
-                  <CountUpNumber
-                    value={Object.values(villages['karang-asri'].indicators).reduce((a, b) => a + b, 0)}
-                  />{' '}
-                  / 120
-                </td>
-                <td className="py-3.5 px-4 text-center text-[#825708]">
-                  <CountUpNumber
-                    value={Object.values(villages['tirta-mukti'].indicators).reduce((a, b) => a + b, 0)}
-                  />{' '}
-                  / 120
-                </td>
-                <td className="py-3.5 px-4 text-center text-[#4C9A52]">
-                  <CountUpNumber
-                    value={Object.values(villages['sumber-makmur'].indicators).reduce((a, b) => a + b, 0)}
-                  />{' '}
-                  / 120
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Bottom Action Footer Strip */}
-      <div className="bg-[#E4E8D6] border border-[#C5CCAE] p-5 rounded-[14px] flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full min-w-0">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#4B5D2A] text-[#F7F8EE] flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-[22px]">verified</span>
-          </div>
-          <div>
-            <h4 className="text-[14px] font-extrabold text-[#4B5D2A]">
-              Skor Siap: Terkalkulasi <CountUpNumber value={totalScore} />/120 (Level {readinessLevel})
-            </h4>
-            <p className="text-[12px] text-[#3A4728]">
-              Tahap selanjutnya: Analisis model kepemilikan dan kalkulasi simulator arus kas di modul
-              Rancang Watt.
-            </p>
-          </div>
-        </div>
-
-        <GradientButton
-          onClick={() => setActivePage('rancang-watt')}
-          variant="green"
-          size="lg"
-          className="inline-flex items-center justify-center gap-2 font-extrabold text-[14px] shadow-sm cursor-pointer group py-3 px-6"
-        >
-          <span>Lanjut ke Simulasi "Rancang Watt"</span>
-          <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">
-            arrow_forward
-          </span>
-        </GradientButton>
-      </div>
-
-      {/* Modal Cetak / Simpan PDF Siap Cetak A4 */}
+      {/* Modal Cetak Laporan PDF */}
       <CetakLaporanModal
         isOpen={isPrintModalOpen}
         onClose={() => setIsPrintModalOpen(false)}
-        villageId={selectedVillageId}
       />
     </div>
   );

@@ -3,46 +3,90 @@ import { useDesaWatt } from '../context/DesaWattContext';
 import { DesaWattLogoMark } from './DesaWattLogoMark';
 
 export const Sidebar: React.FC = () => {
-  const { activePage, setActivePage, isSidebarCollapsed, toggleSidebar } = useDesaWatt();
+  const { activePage, setActivePage, isSidebarCollapsed, toggleSidebar, setIsPublicPortal } = useDesaWatt();
 
   const navItems = [
     {
       id: 'beranda' as const,
       label: 'Beranda',
+      sublabel: 'Kemandirian Desa',
       icon: 'dashboard',
       badge: null,
+      badgeColor: 'system',
+    },
+    {
+      id: 'dengar-warga' as const,
+      label: '1. Dengar Warga',
+      sublabel: 'Kebutuhan & musyawarah',
+      icon: 'forum',
+      badge: 'Pendampingan',
+      badgeColor: 'amber',
+    },
+    {
+      id: 'belajar-energi' as const,
+      label: '2. Belajar Energi',
+      sublabel: 'Literasi terukur pre/post',
+      icon: 'school',
+      badge: 'Pendampingan',
+      badgeColor: 'amber',
     },
     {
       id: 'baca-desa' as const,
-      label: '1 Baca Desa',
+      label: '3. Baca Desa',
+      sublabel: 'Profil kesiapan & kesenjangan',
       icon: 'fact_check',
-      badge: 'Pilar 1',
+      badge: 'Sistem',
+      badgeColor: 'system',
     },
     {
       id: 'rancang-watt' as const,
-      label: '2 Rancang Watt',
-      icon: 'solar_power',
-      badge: 'Pilar 2',
+      label: '4. Rancang Watt',
+      sublabel: 'Biaya siklus hidup & O&M',
+      icon: 'tune',
+      badge: 'Sistem',
+      badgeColor: 'system',
     },
     {
       id: 'gerbang-keputusan' as const,
       label: '◇ Gerbang Keputusan',
+      sublabel: 'Tahap penghubung musdes',
       icon: 'verified_user',
-      badge: 'Gerbang',
+      badge: 'Penghubung',
+      badgeColor: 'gate',
       isGate: true,
     },
     {
+      id: 'kelola-bersama' as const,
+      label: '5. Kelola Bersama',
+      sublabel: 'Operator, SOP, pembukuan',
+      icon: 'hub',
+      badge: 'Pendampingan',
+      badgeColor: 'amber',
+    },
+    {
       id: 'jaga-watt' as const,
-      label: '3 Jaga Watt',
+      label: '6. Jaga Watt',
+      sublabel: 'Monitoring, keluhan, aksi',
       icon: 'monitor_heart',
-      badge: 'Pilar 3',
+      badge: 'Sistem',
+      badgeColor: 'system',
+    },
+    {
+      id: 'portal-warga' as const,
+      label: 'Portal Warga',
+      sublabel: 'Transparansi tanpa login',
+      icon: 'public',
+      badge: 'Publik',
+      badgeColor: 'public',
+      isPortalAction: true,
     },
     {
       id: 'ringkasan-wilayah' as const,
       label: 'Ringkasan Wilayah',
-      icon: 'public',
+      sublabel: 'Tinjauan multi-desa',
+      icon: 'domain',
       badge: null,
-      roleTag: 'Kemenkop · ESDM · Kemendes · Dinas',
+      badgeColor: 'system',
     },
   ];
 
@@ -65,9 +109,9 @@ export const Sidebar: React.FC = () => {
             <div
               onClick={toggleSidebar}
               title={isSidebarCollapsed ? 'Buka Sidebar' : 'Lipat Sidebar'}
-              className="p-1 rounded-[10px] bg-[#FAFBF4] flex items-center justify-center shrink-0 shadow-xs cursor-pointer hover:scale-105 transition-transform"
+              className="p-1 rounded-[10px] bg-[#FAFBF4] border border-[#C5CCAE] flex items-center justify-center shrink-0 shadow-xs cursor-pointer hover:scale-105 transition-transform"
             >
-              <DesaWattLogoMark size={28} className="shrink-0" />
+              <DesaWattLogoMark size={28} className="shrink-0" animated />
             </div>
 
             {!isSidebarCollapsed && (
@@ -76,7 +120,7 @@ export const Sidebar: React.FC = () => {
                   DesaWatt
                 </span>
                 <span className="text-[10px] 2xl:text-[11px] font-bold text-[#D4DCBC] uppercase tracking-wider truncate">
-                  PLTS Komunal Desa
+                  Pemberdayaan Masyarakat
                 </span>
               </div>
             )}
@@ -96,38 +140,48 @@ export const Sidebar: React.FC = () => {
 
         {/* Section title (only when expanded) */}
         {!isSidebarCollapsed && (
-          <div className="hidden min-[1100px]:flex px-4 2xl:px-5 pt-3.5 pb-1 items-center justify-between">
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#D4DCBC]">
-              Menu Navigasi
+          <div className="hidden min-[1100px]:flex px-4 2xl:px-5 pt-3 pb-1 items-center justify-between">
+            <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-[#D4DCBC]">
+              Alur 6 Komponen Pemberdayaan
             </span>
           </div>
         )}
 
         {/* Navigation list */}
-        <nav className="flex-1 px-2 min-[1100px]:px-2.5 2xl:px-3 pt-2 space-y-1.5 overflow-y-auto overflow-x-hidden">
+        <nav className="flex-1 px-2 min-[1100px]:px-2.5 2xl:px-3 pt-1.5 space-y-1 overflow-y-auto overflow-x-hidden">
           {navItems.map((item) => {
-            const isActive = activePage === item.id;
+            const isActive = !('isPortalAction' in item) && activePage === item.id;
             return (
               <button
                 key={item.id}
-                onClick={() => setActivePage(item.id)}
+                onClick={() => {
+                  if ('isPortalAction' in item && item.isPortalAction) {
+                    setIsPublicPortal(true);
+                  } else {
+                    setActivePage(item.id as any);
+                  }
+                }}
                 title={item.label}
-                className={`w-full flex items-center rounded-[12px] transition-all text-left font-bold text-[13px] 2xl:text-[14px] cursor-pointer group ${
+                className={`w-full flex items-center rounded-[12px] transition-all text-left font-bold text-[12.5px] 2xl:text-[13.5px] cursor-pointer group ${
                   isSidebarCollapsed
-                    ? 'justify-center p-2.5'
-                    : 'justify-center min-[1100px]:justify-between p-2.5 min-[1100px]:px-3 min-[1100px]:py-2 2xl:px-3.5 2xl:py-2.5'
+                    ? 'justify-center p-2'
+                    : 'justify-center min-[1100px]:justify-between p-2 min-[1100px]:px-2.5 min-[1100px]:py-2 2xl:px-3 2xl:py-2.5'
                 } ${
                   isActive
                     ? 'bg-[#E4E8D6] text-[#3F4E2C] shadow-sm font-black'
                     : 'text-[#EEF1DF] hover:bg-[#4B5D2A] hover:text-[#F7F8EE]'
                 }`}
               >
-                <div className="flex items-center gap-2.5 2xl:gap-3 min-w-0">
+                <div className="flex items-center gap-2 2xl:gap-2.5 min-w-0">
                   <span
-                    className={`material-symbols-outlined text-[20px] shrink-0 ${
+                    className={`material-symbols-outlined text-[19px] shrink-0 ${
                       isActive
                         ? 'text-[#3F4E2C]'
-                        : item.isGate
+                        : item.badgeColor === 'amber'
+                        ? 'text-[#F6E7BD]'
+                        : item.badgeColor === 'gate'
+                        ? 'text-[#E0A526]'
+                        : item.badgeColor === 'public'
                         ? 'text-[#E0A526]'
                         : 'text-[#D4DCBC]'
                     }`}
@@ -136,12 +190,14 @@ export const Sidebar: React.FC = () => {
                   </span>
                   {!isSidebarCollapsed && (
                     <div className="hidden min-[1100px]:flex flex-col min-w-0">
-                      <span className="truncate">{item.label}</span>
-                      {'roleTag' in item && item.roleTag && (
-                        <span className={`text-[9px] truncate font-medium ${
-                          isActive ? 'text-[#3F4E2C]/80' : 'text-[#D4DCBC]/80'
-                        }`}>
-                          {item.roleTag}
+                      <span className="truncate leading-tight">{item.label}</span>
+                      {item.sublabel && (
+                        <span
+                          className={`text-[8.5px] 2xl:text-[9px] truncate font-medium ${
+                            isActive ? 'text-[#3F4E2C]/80' : 'text-[#D4DCBC]/80'
+                          }`}
+                        >
+                          {item.sublabel}
                         </span>
                       )}
                     </div>
@@ -150,10 +206,14 @@ export const Sidebar: React.FC = () => {
 
                 {!isSidebarCollapsed && item.badge && (
                   <span
-                    className={`hidden min-[1100px]:inline text-[9.5px] 2xl:text-[10px] px-1.5 2xl:px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider shrink-0 ${
+                    className={`hidden min-[1100px]:inline text-[9px] px-1.5 py-0.2 rounded-full font-extrabold uppercase tracking-wider shrink-0 ${
                       isActive
                         ? 'bg-[#3F4E2C] text-[#E4E8D6]'
-                        : item.isGate
+                        : item.badgeColor === 'amber'
+                        ? 'bg-[#F6E7BD] text-[#825708]'
+                        : item.badgeColor === 'gate'
+                        ? 'bg-[#FAFBF4] text-[#4B5D2A]'
+                        : item.badgeColor === 'public'
                         ? 'bg-[#F6E7BD] text-[#825708]'
                         : 'bg-[#4B5D2A] text-[#EEF1DF]'
                     }`}
@@ -169,48 +229,24 @@ export const Sidebar: React.FC = () => {
 
       {/* Bottom status & fold toggle */}
       <div className="p-2 min-[1100px]:p-3 border-t border-[#4B5D2A] shrink-0 space-y-2">
-        {/* If collapsed: single button to expand */}
         {isSidebarCollapsed ? (
           <button
             onClick={toggleSidebar}
             title="Buka Sidebar"
-            className="w-full h-9 rounded-xl bg-[#4B5D2A] hover:bg-[#5E7336] text-[#F7F8EE] flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+            className="w-full h-8 rounded-xl bg-[#4B5D2A] hover:bg-[#5E7336] text-[#F7F8EE] flex items-center justify-center transition-colors cursor-pointer shadow-xs"
           >
-            <span className="material-symbols-outlined text-[20px]">last_page</span>
+            <span className="material-symbols-outlined text-[18px]">last_page</span>
           </button>
         ) : (
-          <>
-            <div className="hidden min-[1100px]:flex bg-[#364326] p-2 2xl:p-2.5 rounded-xl border border-[#4B5D2A] items-center justify-between">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="w-2 h-2 rounded-full bg-[#4C9A52] animate-pulse shrink-0 shadow-sm"></span>
-                <div className="flex flex-col min-w-0">
-                  <span className="text-[10.5px] 2xl:text-[11px] font-bold text-[#F7F8EE] truncate">
-                    Server Pusat
-                  </span>
-                  <span className="text-[9px] 2xl:text-[9.5px] text-[#D4DCBC] font-semibold truncate">
-                    Sinkronisasi Realtime
-                  </span>
-                </div>
-              </div>
-              <span className="material-symbols-outlined text-[#D4DCBC] text-[15px] 2xl:text-[16px]">
-                cloud_done
-              </span>
+          <div className="hidden min-[1100px]:flex bg-[#364326] p-2.5 rounded-xl border border-[#4B5D2A] flex-col gap-1">
+            <div className="flex items-center gap-1.5 text-[10px] text-[#F6E7BD] font-bold">
+              <span className="material-symbols-outlined text-[14px] text-[#E0A526]">diversity_3</span>
+              <span>Kemandirian Berkelanjutan</span>
             </div>
-
-            <div className="hidden min-[1100px]:flex bg-[#364326] p-2 2xl:p-2.5 rounded-xl border border-[#4B5D2A] items-start gap-2">
-              <span className="material-symbols-outlined text-[#E0A526] text-[15px] 2xl:text-[16px] shrink-0 mt-0.5">
-                support_agent
-              </span>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[10.5px] 2xl:text-[11px] font-bold text-[#F7F8EE] truncate">
-                  Bantuan Desa
-                </span>
-                <span className="text-[9px] 2xl:text-[9.5px] text-[#D4DCBC] font-medium truncate">
-                  Pendamping Siap Bantu
-                </span>
-              </div>
-            </div>
-          </>
+            <p className="text-[8.5px] text-[#D4DCBC] leading-tight">
+              DesaWatt membantu menyajikan data; keputusan di musyawarah desa.
+            </p>
+          </div>
         )}
       </div>
     </aside>

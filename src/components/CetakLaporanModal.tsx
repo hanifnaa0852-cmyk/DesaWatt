@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDesaWatt, INDICATOR_CONFIGS } from '../context/DesaWattContext';
+import { useDesaWatt, DIMENSION_CONFIGS, PREREQUISITE_CONFIGS } from '../context/DesaWattContext';
 import { VillageId } from '../types';
 import { GradientButton } from '@/components/ui/gradient-button';
 
@@ -20,38 +20,13 @@ export const CetakLaporanModal: React.FC<CetakLaporanModalProps> = ({
 
   const targetVillageId = villageId || selectedVillageId;
   const village = villages[targetVillageId] || activeVillage;
-  const score = Object.values(village.indicators).reduce((a, b) => a + b, 0);
-  const readinessLevel = score <= 60 ? 'Rendah' : score <= 90 ? 'Menengah' : 'Tinggi';
-
-  const recModel =
-    score >= 91
-      ? 'Milik Koperasi Penuh'
-      : score >= 61
-      ? 'Kemitraan (JV BUMDes / Swasta)'
-      : 'EaaS (Energy-as-a-Service)';
-
   const gateInfo = calculateGateChecklist(targetVillageId);
 
-  // Lowest indicators
-  const sortedIndicators = [...INDICATOR_CONFIGS].sort((a, b) => {
-    return village.indicators[a.key] - village.indicators[b.key];
-  });
-  const lowestTwo = sortedIndicators.slice(0, 2);
-
-  // Unpassed gate requirements list
-  const unpassedRequirements: string[] = [];
-  if (score < 61) {
-    unpassedRequirements.push(`Skor minimal belum mencapai ambang kelayakan microgrid (Saat ini ${score}/120, minimal 61 poin).`);
-  }
-  if (!village.musdesApproved) {
-    unpassedRequirements.push('Berita Acara Musyawarah Desa (Musdes Khusus) belum ditandatangani dan disahkan oleh BPD & Kepala Desa.');
-  }
-  if (!village.pendampingAssigned) {
-    unpassedRequirements.push('Tenaga pendamping teknis lapangan bersertifikasi belum ditugaskan secara resmi oleh Dinas.');
-  }
-  if (village.saldoDanaOMJuta <= 0) {
-    unpassedRequirements.push('Rekening cadangan operasional & pemeliharaan (dana O&M) belum dialokasikan.');
-  }
+  // Status kualitatif 8 dimensi
+  const villageDimensions = village.dimensions || {};
+  const gapDimensions = DIMENSION_CONFIGS.filter(
+    (cfg) => villageDimensions[cfg.key]?.status !== 'Siap'
+  );
 
   const currentDate = new Date().toLocaleDateString('id-ID', {
     day: 'numeric',
@@ -71,7 +46,7 @@ export const CetakLaporanModal: React.FC<CetakLaporanModalProps> = ({
         <div className="no-print bg-[#3F4E2C] text-[#F7F8EE] px-6 py-3 flex items-center justify-between border-b border-[#323E23]">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-[20px]">print</span>
-            <span className="font-bold text-[14px]">Pratinjau Laporan Kesiapan PLTS Desa (Siap Cetak A4)</span>
+            <span className="font-bold text-[14px]">Pratinjau Laporan Profil Diagnosis PLTS Desa (Siap Cetak A4)</span>
           </div>
           <div className="flex items-center gap-2">
             <GradientButton
@@ -104,23 +79,23 @@ export const CetakLaporanModal: React.FC<CetakLaporanModalProps> = ({
               </div>
               <div>
                 <h1 className="text-[18px] sm:text-[20px] font-black text-[#1F2A14] tracking-tight uppercase leading-tight">
-                  LAPORAN DIAGNOSTIK KESIAPAN PLTS KOMUNAL DESA
+                  LAPORAN DIAGNOSTIK KESIAPAN & GERBANG KEPUTUSAN PLTS DESA
                 </h1>
                 <p className="text-[12px] text-[#475569] font-medium">
-                  Kerangka Tata Kelola Koperasi Desa Merah Putih • Kab. Mukomuko, Bengkulu
+                  Kerangka Pemberdayaan Komunal DesaWatt • Tata Kelola Koperasi Desa & Warga
                 </p>
               </div>
             </div>
 
             <div className="text-right shrink-0">
               <span className="inline-block px-2.5 py-1 rounded-md bg-[#FAFBF4] border border-[#CBD5E1] text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
-                Data simulasi - prototipe konseptual
+                Data ilustratif – prototipe konseptual
               </span>
               <p className="text-[11px] text-[#64748B] mt-1">Tanggal Cetak: {currentDate}</p>
             </div>
           </div>
 
-          {/* Desa Profile & Summary Score Card */}
+          {/* Desa Profile & Summary */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] mb-4 print:bg-white print:border-black">
             <div>
               <span className="text-[10px] font-bold text-[#64748B] uppercase block">Nama Desa</span>
@@ -128,60 +103,67 @@ export const CetakLaporanModal: React.FC<CetakLaporanModalProps> = ({
               <span className="text-[11px] text-[#475569]">{village.subdistrict}, {village.regency}</span>
             </div>
             <div>
-              <span className="text-[10px] font-bold text-[#64748B] uppercase block">Total Skor Kesiapan</span>
-              <span className="text-[18px] font-black text-[#147A4B] block">{score} / 120</span>
-              <span className="text-[11px] font-bold text-[#334155]">Level {readinessLevel}</span>
+              <span className="text-[10px] font-bold text-[#64748B] uppercase block">Kapasitas Sistem</span>
+              <span className="text-[14px] font-black text-[#147A4B] block">{village.capacityKwp} kWp / {village.batteryKwh} kWh</span>
+              <span className="text-[11px] text-[#334155]">{village.connectionsKK} KK Penerima Manfaat</span>
             </div>
             <div>
-              <span className="text-[10px] font-bold text-[#64748B] uppercase block">Model Rekomendasi</span>
-              <span className="text-[13px] font-bold text-[#0F172A] block leading-snug">{recModel}</span>
-              <span className="text-[10px] text-[#64748B]">{score >= 91 ? 'Skor ≥ 91' : score >= 61 ? 'Skor ≥ 61' : 'Skor < 61'}</span>
+              <span className="text-[10px] font-bold text-[#64748B] uppercase block">Status Gerbang</span>
+              <span className="text-[13px] font-bold text-[#0F172A] block leading-snug">{gateInfo.statusText}</span>
+              <span className="text-[10px] text-[#64748B]">{gateInfo.passedCount} dari 5 Prasyarat</span>
             </div>
             <div>
-              <span className="text-[10px] font-bold text-[#64748B] uppercase block">Status Gerbang SPK</span>
-              <span className="text-[12px] font-bold text-[#0F172A] block leading-snug">{gateInfo.statusText}</span>
-              <span className="text-[10px] text-[#64748B]">Validasi: {gateInfo.passedCount}/{gateInfo.totalCount} Syarat</span>
+              <span className="text-[10px] font-bold text-[#64748B] uppercase block">Saran Rekomendasi</span>
+              <span className="text-[11px] font-semibold text-[#0F172A] block leading-snug">{gateInfo.saranRekomendasi}</span>
             </div>
           </div>
 
-          {/* Table 8 Indicators */}
+          {/* Table 8 Dimensi Diagnosis */}
           <div className="mb-4">
             <h2 className="text-[13px] font-black uppercase tracking-wider text-[#1F2A14] mb-2 flex items-center justify-between border-b pb-1">
-              <span>1. Rincian Penilaian 8 Indikator Kesiapan (Baca Desa)</span>
-              <span className="text-[10px] font-normal text-[#64748B]">Total Maksimal: 120 Poin</span>
+              <span>1. Profil Diagnosis 8 Dimensi Kesiapan (Baca Desa)</span>
+              <span className="text-[10px] font-normal text-[#64748B]">Penilaian Kualitatif</span>
             </h2>
 
             <table className="w-full text-left border-collapse text-[11px]">
               <thead>
                 <tr className="bg-[#F1F5F9] text-[#475569] uppercase font-bold text-[10px] border-y border-[#CBD5E1]">
                   <th className="py-1.5 px-2 w-8">No</th>
-                  <th className="py-1.5 px-2">Indikator Kesiapan</th>
-                  <th className="py-1.5 px-2">Dimensi</th>
-                  <th className="py-1.5 px-2 text-center w-20">Skor (5/10/15)</th>
-                  <th className="py-1.5 px-2">Keterangan Kondisi Lapangan</th>
+                  <th className="py-1.5 px-2">Dimensi Kesiapan</th>
+                  <th className="py-1.5 px-2 text-center w-28">Status Dimensi</th>
+                  <th className="py-1.5 px-2 text-center w-36">Status Bukti</th>
+                  <th className="py-1.5 px-2">Bukti Minimum yang Diperiksa</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E2E8F0]">
-                {INDICATOR_CONFIGS.map((ind) => {
-                  const val = village.indicators[ind.key];
-                  const opt = ind.options[val];
+                {DIMENSION_CONFIGS.map((dim) => {
+                  const state = villageDimensions[dim.key] || {
+                    status: 'Belum siap',
+                    verificationStatus: 'Belum diverifikasi',
+                  };
                   return (
-                    <tr key={ind.key}>
-                      <td className="py-1 px-2 font-bold text-[#64748B]">{ind.number}</td>
-                      <td className="py-1 px-2 font-bold text-[#0F172A]">{ind.name}</td>
-                      <td className="py-1 px-2 text-[#64748B]">{ind.category}</td>
+                    <tr key={dim.key}>
+                      <td className="py-1 px-2 font-bold text-[#64748B]">{dim.number}</td>
+                      <td className="py-1 px-2 font-bold text-[#0F172A]">{dim.title}</td>
                       <td className="py-1 px-2 text-center font-black">
-                        <span className={`px-2 py-0.5 rounded text-[10px] ${
-                          val === 15
-                            ? 'bg-[#E2F0E4] text-[#27602C]'
-                            : val === 10
-                            ? 'bg-[#F6E7BD] text-[#825708]'
-                            : 'bg-[#F9DFDC] text-[#8B281B]'
-                        }`}>
-                          {val} / 15
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] ${
+                            state.status === 'Siap'
+                              ? 'bg-[#E2F0E4] text-[#27602C]'
+                              : state.status === 'Perlu penguatan'
+                              ? 'bg-[#F6E7BD] text-[#825708]'
+                              : 'bg-[#F9DFDC] text-[#8B281B]'
+                          }`}
+                        >
+                          {state.status}
                         </span>
                       </td>
-                      <td className="py-1 px-2 text-[#334155]">{opt.desc}</td>
+                      <td className="py-1 px-2 text-center">
+                        <span className="text-[10px] text-[#475569]">
+                          {state.verificationStatus}
+                        </span>
+                      </td>
+                      <td className="py-1 px-2 text-[#334155]">{dim.evidenceMinimum}</td>
                     </tr>
                   );
                 })}
@@ -189,46 +171,57 @@ export const CetakLaporanModal: React.FC<CetakLaporanModalProps> = ({
             </table>
           </div>
 
-          {/* 2 Column: Lowest Indicators & Unpassed Gate Requirements */}
+          {/* 2 Column: Daftar Kesenjangan & 5 Prasyarat Mutlak */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            {/* Box 1: Indikator Penahan Skor */}
+            {/* Box 1: Daftar Kesenjangan */}
             <div className="p-3 rounded-xl border border-[#FCDCA7] bg-[#FEF6E9] print:bg-white print:border-black">
               <h3 className="text-[12px] font-black text-[#96600E] uppercase tracking-wider mb-1.5">
-                2. Indikator Penahan Skor (Prioritas Pembinaan)
+                2. Daftar Kesenjangan yang Perlu Ditutup ({gapDimensions.length})
               </h3>
-              <div className="space-y-2">
-                {lowestTwo.map((item) => (
-                  <div key={item.key} className="text-[11px]">
-                    <div className="font-bold text-[#0F172A]">
-                      • {item.name} ({village.indicators[item.key]}/15):
-                    </div>
-                    <div className="text-[#475569] pl-2.5">
-                      Rekomendasi: {item.recommendationIfLow}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Box 2: Status Gerbang & Syarat Belum Lulus */}
-            <div className="p-3 rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] print:bg-white print:border-black">
-              <h3 className="text-[12px] font-black text-[#1F2A14] uppercase tracking-wider mb-1.5">
-                3. Status Gerbang Keputusan & Syarat Belum Lulus
-              </h3>
-              {unpassedRequirements.length === 0 ? (
+              {gapDimensions.length === 0 ? (
                 <div className="text-[11px] text-[#147A4B] font-bold">
-                  ✓ Seluruh syarat gerbang keputusan telah terpenuhi lengkap. Rekomendasi penerbitan Surat Perintah Kerja (SPK) siap diproses.
+                  Seluruh 8 dimensi berada pada status Siap. Tidak ada kesenjangan kritis.
                 </div>
               ) : (
-                <ul className="space-y-1.5 text-[11px] text-[#334155]">
-                  {unpassedRequirements.map((req, idx) => (
-                    <li key={idx} className="flex items-start gap-1.5">
-                      <span className="text-[#D64545] font-black shrink-0">✕</span>
-                      <span>{req}</span>
-                    </li>
+                <div className="space-y-2">
+                  {gapDimensions.map((item) => (
+                    <div key={item.key} className="text-[11px]">
+                      <div className="font-bold text-[#0F172A]">
+                        • {item.title} ({villageDimensions[item.key]?.status || 'Belum siap'}):
+                      </div>
+                      <div className="text-[#475569] pl-2.5">
+                        Tindakan: {item.gapActionSuggestion}
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               )}
+            </div>
+
+            {/* Box 2: 5 Prasyarat Mutlak Gerbang Keputusan */}
+            <div className="p-3 rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] print:bg-white print:border-black">
+              <h3 className="text-[12px] font-black text-[#1F2A14] uppercase tracking-wider mb-1.5">
+                3. Telaah 5 Prasyarat Mutlak Gerbang Keputusan
+              </h3>
+              <ul className="space-y-1.5 text-[11px] text-[#334155]">
+                {PREREQUISITE_CONFIGS.map((prereq) => {
+                  const state = village.prerequisites?.[prereq.id];
+                  const isChecked = state?.checked;
+                  return (
+                    <li key={prereq.id} className="flex items-start gap-1.5">
+                      <span className={isChecked ? 'text-[#147A4B] font-black' : 'text-[#D64545] font-black'}>
+                        {isChecked ? '✓' : '✕'}
+                      </span>
+                      <div>
+                        <strong>{prereq.title}</strong>
+                        {state?.evidenceNote && (
+                          <span className="text-[#64748B] block italic">Bukti: {state.evidenceNote}</span>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           </div>
 
@@ -245,15 +238,16 @@ export const CetakLaporanModal: React.FC<CetakLaporanModalProps> = ({
               <p className="text-[10px] text-[#64748B]">Tenaga Pendamping Lapangan</p>
             </div>
             <div>
-              <p className="text-[#64748B] mb-8">Mengetahui (Pemerintah Desa):</p>
-              <p className="font-bold text-[#0F172A] underline">Kepala Desa {village.name}</p>
-              <p className="text-[10px] text-[#64748B]">Kec. {village.subdistrict}</p>
+              <p className="text-[#64748B] mb-8">Ditinjau Oleh (Pengawas Koperasi):</p>
+              <p className="font-bold text-[#0F172A] underline">Pengawas Koperasi Desa</p>
+              <p className="text-[10px] text-[#64748B]">Unit Pengawasan KDKMP/BUMDes</p>
             </div>
           </div>
 
           {/* Footer note */}
-          <div className="mt-4 pt-2 border-t border-[#E2E8F0] text-center text-[10px] text-[#64748B]">
-            Dokumen dihasilkan secara otomatis oleh sistem DesaWatt • Horison 2026 • Label simulasi: <strong>Data simulasi - prototipe konseptual</strong>
+          <div className="mt-4 pt-2 border-t border-[#E2E8F0] text-center text-[10px] text-[#64748B] leading-relaxed">
+            <div>DesaWatt hanya alat bantu analisis. Keputusan akhir ditetapkan oleh musyawarah desa, pengurus koperasi, dan pendamping.</div>
+            <div>Data demo bersifat ilustratif, bukan hasil pengukuran lapangan. Angka dampak akan diukur lewat pilot dan evaluasi independen.</div>
           </div>
         </div>
       </div>

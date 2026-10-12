@@ -5,6 +5,11 @@ import { CountUpNumber } from '@/components/ui/CountUpNumber';
 import { GlowingMetricCard } from '@/components/ui/GlowingMetricCard';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { CetakLaporanModal } from '../components/CetakLaporanModal';
+import {
+  SCORE_THRESHOLDS,
+  toScore100,
+  getReadinessLevel,
+} from '../utils/score';
 
 export const RingkasanWilayah: React.FC = () => {
   const { villages, selectedVillageId, setSelectedVillageId, setActivePage, calculateGateChecklist } = useDesaWatt();
@@ -14,32 +19,25 @@ export const RingkasanWilayah: React.FC = () => {
   const villageList = Object.values(villages);
   const totalDesa = villageList.length;
 
-  // 1. Rata-rata skor
-  const scores = villageList.map((v) =>
-    Object.values(v.indicators).reduce((a, b) => a + b, 0)
-  );
-  const averageScore = Math.round(scores.reduce((a, b) => a + b, 0) / (totalDesa || 1));
-
-  // 2. Sebaran level
+  // 1. Sebaran level kesiapan kualitatif
   const levelsCount: Record<ReadinessLevel, number> = {
     Rendah: 0,
     Menengah: 0,
     Tinggi: 0,
   };
-  scores.forEach((s) => {
-    if (s <= 60) levelsCount['Rendah'] += 1;
-    else if (s <= 90) levelsCount['Menengah'] += 1;
-    else levelsCount['Tinggi'] += 1;
+  villageList.forEach((v) => {
+    const lvl = getReadinessLevel(v.dimensions);
+    levelsCount[lvl] = (levelsCount[lvl] || 0) + 1;
   });
 
-  // 3. Persentase desa dengan rencana dana O&M (indikator 8 / dana_om minimal bernilai 10)
-  const desaWithOMPlan = villageList.filter((v) => v.indicators.dana_om >= 10).length;
+  // 2. Persentase desa dengan cadangan O&M (saldo dana O&M > 0)
+  const desaWithOMPlan = villageList.filter((v) => v.saldoDanaOMJuta > 0).length;
   const percentOMPlan = Math.round((desaWithOMPlan / (totalDesa || 1)) * 100);
 
-  // 4. Jumlah desa menunggu syarat gerbang
+  // 3. Jumlah desa menunggu pemenuhan prasyarat gerbang
   const desaMenungguGerbang = villageList.filter((v) => {
     const gate = calculateGateChecklist(v.id);
-    return !gate.allPass || Object.values(v.indicators).reduce((a, b) => a + b, 0) < 61;
+    return !gate.allPass;
   }).length;
 
   // Total terpasang & KK
@@ -56,7 +54,7 @@ export const RingkasanWilayah: React.FC = () => {
       cx: 140,
       cy: 70,
       village: villages['sumber-makmur'],
-      score: Object.values(villages['sumber-makmur'].indicators).reduce((a, b) => a + b, 0),
+      level: getReadinessLevel(villages['sumber-makmur']?.dimensions),
     },
     {
       id: 'karang-asri' as VillageId,
@@ -65,7 +63,7 @@ export const RingkasanWilayah: React.FC = () => {
       cx: 260,
       cy: 130,
       village: villages['karang-asri'],
-      score: Object.values(villages['karang-asri'].indicators).reduce((a, b) => a + b, 0),
+      level: getReadinessLevel(villages['karang-asri']?.dimensions),
     },
     {
       id: 'tirta-mukti' as VillageId,
@@ -74,19 +72,19 @@ export const RingkasanWilayah: React.FC = () => {
       cx: 370,
       cy: 180,
       village: villages['tirta-mukti'],
-      score: Object.values(villages['tirta-mukti'].indicators).reduce((a, b) => a + b, 0),
+      level: getReadinessLevel(villages['tirta-mukti']?.dimensions),
     },
   ];
 
-  const getLevelColor = (score: number) => {
-    if (score >= 91) return '#4C9A52'; // Hijau Sehat/Tinggi
-    if (score >= 61) return '#D99A1E'; // Amber Waspada/Menengah
+  const getLevelColor = (level: ReadinessLevel) => {
+    if (level === 'Tinggi') return '#4C9A52'; // Hijau Sehat/Tinggi
+    if (level === 'Menengah') return '#D99A1E'; // Amber Waspada/Menengah
     return '#B84A3A'; // Merah Rendah
   };
 
-  const getLevelBadgeClass = (score: number) => {
-    if (score >= 91) return 'bg-[#E2F0E4] text-[#27602C] border-[#C2E0C5]';
-    if (score >= 61) return 'bg-[#F6E7BD] text-[#825708] border-[#EED38A]';
+  const getLevelBadgeClass = (level: ReadinessLevel) => {
+    if (level === 'Tinggi') return 'bg-[#E2F0E4] text-[#27602C] border-[#C2E0C5]';
+    if (level === 'Menengah') return 'bg-[#F6E7BD] text-[#825708] border-[#EED38A]';
     return 'bg-[#F9DFDC] text-[#8B281B] border-[#ECAAA4]';
   };
 
@@ -125,7 +123,7 @@ export const RingkasanWilayah: React.FC = () => {
 
         <div className="flex items-center gap-2 shrink-0">
           <span className="px-3 py-1 rounded-full bg-[#FAFBF4] border border-[#C5CCAE] text-[11px] font-bold text-[#6B7753]">
-            Data simulasi - prototipe konseptual
+            Data ilustratif – prototipe konseptual
           </span>
         </div>
       </div>
@@ -147,17 +145,17 @@ export const RingkasanWilayah: React.FC = () => {
           </div>
         </GlowingMetricCard>
 
-        {/* KPI 2: Rata-Rata Skor */}
+        {/* KPI 2: Status Kesiapan Wilayah */}
         <GlowingMetricCard>
           <div className="p-4.5 flex flex-col justify-between h-full">
             <span className="text-[11px] font-bold text-[#6B7753] uppercase block">
-              Rata-Rata Skor
+              Status Wilayah
             </span>
-            <div className="text-[26px] font-black text-[#1F2A14] mt-1 tracking-tight">
-              <CountUpNumber value={averageScore} /> <span className="text-[14px] text-[#6B7753] font-bold">/ 120</span>
+            <div className="text-[22px] font-black text-[#1F2A14] mt-1 tracking-tight">
+              Dominan Menengah
             </div>
-            <span className="text-[11px] text-[#D99A1E] font-semibold">
-              Kategori: Menengah
+            <span className="text-[11px] text-[#825708] font-semibold">
+              Kesiapan Kemitraan & Mandiri
             </span>
           </div>
         </GlowingMetricCard>
@@ -232,7 +230,7 @@ export const RingkasanWilayah: React.FC = () => {
                 </span>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#FAFBF4] border border-[#C5CCAE] text-[#6B7753]">
-                Data simulasi - prototipe konseptual
+                Data ilustratif – prototipe konseptual
               </span>
             </div>
 
@@ -261,7 +259,7 @@ export const RingkasanWilayah: React.FC = () => {
 
                 {/* Map Nodes */}
                 {mapNodes.map((node) => {
-                  const nodeColor = getLevelColor(node.score);
+                  const nodeColor = getLevelColor(node.level);
                   const isCurrent = node.id === selectedVillageId;
 
                   return (
@@ -328,7 +326,7 @@ export const RingkasanWilayah: React.FC = () => {
                         fontWeight="bold"
                         pointerEvents="none"
                       >
-                        {node.name.replace('Desa ', '')} ({node.score})
+                        {node.name.replace('Desa ', '')} ({node.level})
                       </text>
                     </g>
                   );
@@ -351,15 +349,15 @@ export const RingkasanWilayah: React.FC = () => {
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#4C9A52]"></span>
-                <span>Tinggi (91–120)</span>
+                <span>Tinggi (Mandiri)</span>
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#D99A1E]"></span>
-                <span>Menengah (61–90)</span>
+                <span>Menengah (Kemitraan)</span>
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#B84A3A]"></span>
-                <span>Rendah (40–60)</span>
+                <span>Rendah (Pendampingan)</span>
               </span>
             </div>
           </div>
@@ -379,7 +377,7 @@ export const RingkasanWilayah: React.FC = () => {
                 </span>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#FAFBF4] border border-[#C5CCAE] text-[#6B7753]">
-                Data simulasi - prototipe konseptual
+                Data ilustratif – prototipe konseptual
               </span>
             </div>
 
@@ -454,7 +452,7 @@ export const RingkasanWilayah: React.FC = () => {
         </div>
       </div>
 
-      {/* Tabel Desa: Skor, Level, Model, Status Gerbang, Status PLTS, Aksi */}
+      {/* Tabel Desa: Level, Model, Status Gerbang, Status PLTS, Aksi */}
       <div className="bg-[#F3F5EA] p-6 rounded-[14px] border border-[#C5CCAE] shadow-xs w-full min-w-0">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#C5CCAE] gap-2 mb-4">
           <div>
@@ -467,7 +465,7 @@ export const RingkasanWilayah: React.FC = () => {
             </p>
           </div>
           <span className="text-[11px] font-bold text-[#6B7753]">
-            Data simulasi - prototipe konseptual
+            Data ilustratif – prototipe konseptual
           </span>
         </div>
 
@@ -476,9 +474,8 @@ export const RingkasanWilayah: React.FC = () => {
             <thead>
               <tr className="bg-[#E4E8D6] text-[#6B7753] text-[11px] font-bold uppercase tracking-wider">
                 <th className="py-3 px-4 rounded-l-lg">Nama Desa</th>
-                <th className="py-3 px-4">Skor</th>
-                <th className="py-3 px-4">Level</th>
-                <th className="py-3 px-4">Model Rekomendasi</th>
+                <th className="py-3 px-4">Tingkat Kesiapan</th>
+                <th className="py-3 px-4">Model yang Disarankan</th>
                 <th className="py-3 px-4">Status Gerbang</th>
                 <th className="py-3 px-4">Status PLTS</th>
                 <th className="py-3 px-4 text-center">Laporan</th>
@@ -487,15 +484,14 @@ export const RingkasanWilayah: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-[#C5CCAE]">
               {villageList.map((v) => {
-                const score = Object.values(v.indicators).reduce((a, b) => a + b, 0);
-                const level: ReadinessLevel = score <= 60 ? 'Rendah' : score <= 90 ? 'Menengah' : 'Tinggi';
+                const level = getReadinessLevel(v.dimensions);
                 const gate = calculateGateChecklist(v.id);
                 const isSelected = v.id === selectedVillageId;
 
                 const modelLabel =
-                  score >= 91
+                  level === 'Tinggi'
                     ? 'Milik Koperasi'
-                    : score >= 61
+                    : level === 'Menengah'
                     ? 'Kemitraan/EaaS'
                     : 'EaaS (Pilot Kecil)';
 
@@ -518,12 +514,8 @@ export const RingkasanWilayah: React.FC = () => {
                       <span className="text-[11px] text-[#6B7753] font-normal block">{v.subdistrict}</span>
                     </td>
 
-                    <td className="py-3.5 px-4 font-black text-[#1F2A14]">
-                      <CountUpNumber value={score} /> <span className="text-[11px] text-[#6B7753] font-normal">/ 120</span>
-                    </td>
-
                     <td className="py-3.5 px-4">
-                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-black border ${getLevelBadgeClass(score)}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-black border ${getLevelBadgeClass(level)}`}>
                         Level {level}
                       </span>
                     </td>
