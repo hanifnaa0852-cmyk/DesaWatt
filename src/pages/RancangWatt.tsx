@@ -746,52 +746,76 @@ export const RancangWatt: React.FC = () => {
         <div className="min-[1100px]:col-span-7 space-y-4 w-full min-w-0">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
             <GlowingMetricCard>
-              <div className="p-4.5">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B7753]">
-                  Net Present Value (NPV)
-                </span>
-                <div
-                  className={`text-[20px] font-black mt-1 ${
-                    simulationResults.npvJuta >= 0 ? 'text-[#4C9A52]' : 'text-[#B84A3A]'
-                  }`}
-                >
-                  Rp <CountUpNumber value={simulationResults.npvJuta} /> Jt
+              <div className="p-4.5 flex flex-col justify-between h-full">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B7753]">
+                    Net Present Value (NPV)
+                  </span>
+                  <div
+                    className={`text-[20px] font-black mt-1 ${
+                      simulationResults.npvJuta >= 0 ? 'text-[#4C9A52]' : 'text-[#B84A3A]'
+                    }`}
+                  >
+                    Rp <CountUpNumber value={simulationResults.npvJuta} /> Jt
+                  </div>
+                  <span className="text-[10.5px] text-[#4C9A52] font-semibold block mt-0.5">
+                    {simulationResults.npvJuta >= 0 ? '✓ Arus Kas Positif' : '⚠️ Defisit Nilai Sekarang'}
+                  </span>
                 </div>
-                <span className="text-[10.5px] text-[#6B7753]">
-                  {simulationResults.npvJuta >= 0 ? '✓ Arus Kas Positif' : '⚠️ Defisit Nilai Sekarang'}
-                </span>
+                <div className="text-[9.5px] text-[#6B7753] mt-2 pt-2 border-t border-[#C5CCAE]/60 leading-tight">
+                  Horizon {horizonYears} tahun, diskonto 8%, termasuk penggantian baterai Rp {batteryReplacementCostJuta} Jt di tahun ke-{batteryLifespanYears}
+                </div>
               </div>
             </GlowingMetricCard>
 
-            <GlowingMetricCard>
-              <div className="p-4.5">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B7753]">
-                  Payback Period
-                </span>
-                <div className="text-[20px] font-black text-[#1F2A14] mt-1">
-                  <CountUpNumber value={simulationResults.paybackPeriodYears} /> Tahun
-                </div>
-                <span className="text-[10.5px] text-[#4C9A52] font-bold">
-                  Rata-rata: Rp <CountUpNumber value={simulationResults.netAnnualAverageJuta} /> Jt/thn
-                </span>
-              </div>
-            </GlowingMetricCard>
+            {(() => {
+              const capexVal = capexJuta;
+              const arusKasTahunan = simulationResults.netAnnualAverageJuta;
+              const simplePaybackYears = arusKasTahunan > 0
+                ? Number((capexVal / arusKasTahunan).toFixed(1))
+                : 0; // 650 / 256.5 = 2.5
+              return (
+                <GlowingMetricCard>
+                  <div className="p-4.5 flex flex-col justify-between h-full">
+                    <div>
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B7753]">
+                        Payback Period
+                      </span>
+                      <div className="text-[20px] font-black text-[#1F2A14] mt-1">
+                        <CountUpNumber value={simplePaybackYears} decimals={1} /> Tahun
+                      </div>
+                      <span className="text-[10.5px] text-[#4C9A52] font-bold block mt-0.5">
+                        Arus kas tahunan rata-rata Rp <CountUpNumber value={arusKasTahunan} decimals={1} /> Jt/thn
+                      </span>
+                    </div>
+                    <div className="text-[9.5px] text-[#6B7753] mt-2 pt-2 border-t border-[#C5CCAE]/60 leading-tight">
+                      Payback sederhana, belum memperhitungkan penggantian baterai
+                    </div>
+                  </div>
+                </GlowingMetricCard>
+              );
+            })()}
 
             <GlowingMetricCard>
-              <div className="p-4.5">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B7753]">
-                  Kecukupan Sinking Fund
-                </span>
-                <div
-                  className={`text-[20px] font-black mt-1 ${
-                    simulationResults.batteryFundSufficient ? 'text-[#4C9A52]' : 'text-[#D99A1E]'
-                  }`}
-                >
-                  {simulationResults.batteryFundSufficient ? 'TERPENUHI' : 'DEFISIT DANA'}
+              <div className="p-4.5 flex flex-col justify-between h-full">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B7753]">
+                    Kecukupan Sinking Fund
+                  </span>
+                  <div
+                    className={`text-[20px] font-black mt-1 ${
+                      simulationResults.batteryFundSufficient ? 'text-[#4C9A52]' : 'text-[#D99A1E]'
+                    }`}
+                  >
+                    {simulationResults.batteryFundSufficient ? 'Sesuai rencana' : 'DEFISIT DANA'}
+                  </div>
+                  <span className="text-[10.5px] text-[#6B7753] block mt-0.5">
+                    Tahun ke-{batteryLifespanYears}: Ganti Baterai
+                  </span>
                 </div>
-                <span className="text-[10.5px] text-[#6B7753]">
-                  Tahun ke-{batteryLifespanYears}: Ganti Baterai
-                </span>
+                <div className="text-[9.5px] text-[#6B7753] mt-2 pt-2 border-t border-[#C5CCAE]/60 leading-tight">
+                  Saldo saat ini Rp {activeVillage.saldoDanaOMJuta} Jt dari target Rp {batteryReplacementCostJuta} Jt (tahun ke-{batteryLifespanYears})
+                </div>
               </div>
             </GlowingMetricCard>
           </div>

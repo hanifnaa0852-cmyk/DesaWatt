@@ -31,7 +31,7 @@ function MainApp() {
 
   const paddingLeftClass = isSidebarCollapsed
     ? 'pl-[68px]'
-    : 'pl-[68px] min-[1100px]:pl-[220px] 2xl:pl-[260px]';
+    : 'pl-[68px] min-[1100px]:pl-[300px] 2xl:pl-[320px]';
 
   return (
     <div className="min-h-screen w-full max-w-full bg-[#E4E8D6] text-[#3A4728] flex relative overflow-x-hidden selection:bg-[#4B5D2A] selection:text-[#F7F8EE] font-sans print:bg-white print:p-0">

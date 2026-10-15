@@ -488,21 +488,32 @@ export const GerbangKeputusan: React.FC = () => {
                     </td>
 
                     <td className="py-3.5 px-4">
-                      {vId === 'sumber-makmur' && (
-                        <span className="text-[12px] font-semibold text-[#147A4B]">
-                          Sebagian besar Siap; 2 Perlu penguatan
-                        </span>
-                      )}
-                      {vId === 'tirta-mukti' && (
-                        <span className="text-[12px] font-semibold text-[#96600E]">
-                          Dimensi campuran (Siap & Perlu penguatan)
-                        </span>
-                      )}
-                      {vId === 'karang-asri' && (
-                        <span className="text-[12px] font-semibold text-[#B84A3A]">
-                          Sebagian besar Belum siap
-                        </span>
-                      )}
+                      {(() => {
+                        const dims = Object.values(v.dimensions || {});
+                        const siapCount = dims.filter((d) => d.status === 'Siap').length;
+                        const perluCount = dims.filter((d) => d.status === 'Perlu penguatan').length;
+                        const belumCount = dims.filter((d) => d.status === 'Belum siap').length;
+
+                        if (siapCount >= 6 && perluCount > 0) {
+                          return (
+                            <span className="text-[12px] font-semibold text-[#147A4B]">
+                              Sebagian besar Siap; {perluCount} Perlu penguatan
+                            </span>
+                          );
+                        }
+                        if (belumCount >= 4) {
+                          return (
+                            <span className="text-[12px] font-semibold text-[#B84A3A]">
+                              Sebagian besar Belum siap
+                            </span>
+                          );
+                        }
+                        return (
+                          <span className="text-[12px] font-semibold text-[#96600E]">
+                            Dimensi campuran (Siap & Perlu penguatan)
+                          </span>
+                        );
+                      })()}
                     </td>
 
                     <td className="py-3.5 px-4">

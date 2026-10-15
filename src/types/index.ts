@@ -221,7 +221,7 @@ export interface PelatihanKelompokItem {
   jumlahPeserta: number;
   hasilPreTest: string;
   hasilPostTest: string;
-  tindakLanjut: 'Belum dilakukan' | 'Sudah';
+  tindakLanjut: 'Belum dilakukan' | 'Sudah' | 'Terjadwal';
   catatanTindakLanjut?: string;
 }
 

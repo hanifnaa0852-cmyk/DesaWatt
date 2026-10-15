@@ -229,21 +229,49 @@ export const PortalWarga: React.FC = () => {
                   <CountUpNumber value={activeVillage.productionTodayKwh} />{' '}
                   <span className="text-[16px] text-[#6B7753] font-semibold">kWh</span>
                 </div>
-                <span className="text-[12px] text-[#4C9A52] font-bold">
-                  <CountUpNumber value={88.7} decimals={1} />% dari target harian (160 kWh)
-                </span>
+                {(() => {
+                  const targetHarianKwh = Math.round(activeVillage.capacityKwp * 4.8 * 0.8); // 250 kWh
+                  const capaianPersen = targetHarianKwh > 0
+                    ? Number(((activeVillage.productionTodayKwh / targetHarianKwh) * 100).toFixed(1))
+                    : 0; // 56.8%
+                  return (
+                    <div className="space-y-1">
+                      <div className="text-[12px] text-[#825708] font-bold">
+                        Capaian: <CountUpNumber value={capaianPersen} decimals={1} />% dari target ({targetHarianKwh} kWh)
+                      </div>
+                      <div className="text-[10px] text-[#6B7753] font-medium leading-tight">
+                        Target = {activeVillage.capacityKwp} kWp × 4,8 kWh/m²/hari × 0,8 (PR) = {targetHarianKwh} kWh
+                      </div>
+                      <div className="flex items-center gap-1.5 pt-0.5 flex-wrap">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-[#F6E7BD] text-[#825708] border border-[#EED38A]">
+                          Waspada Ringan
+                        </span>
+                        <span className="text-[11px] text-[#6B7753] font-semibold">
+                          cuaca mendung sebagian
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Mini Gauge */}
-              <div className="w-20 h-20 rounded-full border-4 border-[#4B5D2A] border-t-[#D3D9BE] flex flex-col items-center justify-center font-black text-[15px] text-[#4B5D2A] bg-[#FAFBF4]">
-                <CountUpNumber value={88.7} decimals={1} />%
-                <span className="text-[8px] text-[#6B7753] font-bold uppercase">Tercapai</span>
-              </div>
+              {(() => {
+                const targetHarianKwh = Math.round(activeVillage.capacityKwp * 4.8 * 0.8);
+                const capaianPersen = targetHarianKwh > 0
+                  ? Number(((activeVillage.productionTodayKwh / targetHarianKwh) * 100).toFixed(1))
+                  : 0;
+                return (
+                  <div className="w-20 h-20 rounded-full border-4 border-[#E0A526] border-t-[#D3D9BE] flex flex-col items-center justify-center font-black text-[14px] text-[#825708] bg-[#FAFBF4] shrink-0">
+                    <CountUpNumber value={capaianPersen} decimals={1} />%
+                    <span className="text-[8px] text-[#6B7753] font-bold uppercase">Tercapai</span>
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="p-3 bg-[#FAFBF4] rounded-xl text-[12px] text-[#3A4728] leading-relaxed border border-[#C5CCAE]">
-              <strong className="text-[#1F2A14]">Daya tersimpan cukup</strong> untuk menyalakan
-              seluruh <CountUpNumber value={activeVillage.connectionsKK} /> KK dan penerangan jalan hingga fajar esok hari.
+              Produksi hari ini mencapai <strong>56,8%</strong> (142 kWh dari target 250 kWh) akibat <strong>cuaca mendung sebagian</strong>. Daya tersimpan di bank baterai tetap mencukupi seluruh <CountUpNumber value={activeVillage.connectionsKK} /> KK hingga fajar esok hari.
             </div>
 
             {/* Environmental badges */}

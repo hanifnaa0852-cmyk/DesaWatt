@@ -326,11 +326,10 @@ export const JagaWatt: React.FC = () => {
               <span className="text-[11px] text-[#825708] font-semibold">Sore ini</span>
             </div>
             <h4 className="text-[13px] font-bold text-[#825708]">
-              Inverter Unit 2: Sirip Pendingin Berdebu
+              Capaian 56,8% (142 kWh dari Target 250 kWh) • Cuaca Mendung Sebagian
             </h4>
             <p className="text-[12px] text-[#7A4F06] leading-relaxed">
-              Penurunan efisiensi termal <CountUpNumber value={4} />%. {activeVillage.technicianName}{' '}
-              dijadwalkan pembersihan sirip rutin pukul 16:30 WIB.
+              Target harian = 65 kWp × 4,8 kWh/m²/hari × 0,8 = 250 kWh. Produksi 142 kWh (capaian 56,8%, cuaca mendung sebagian). Status Waspada Ringan tetap. Inverter Unit 2 terjadwal pembersihan sirip debu rutin sore ini.
             </p>
           </div>
 

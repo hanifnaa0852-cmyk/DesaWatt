@@ -152,7 +152,7 @@ const INITIAL_VILLAGES: Record<VillageId, VillageData> = {
       potensi_teknis: { status: 'Siap', verificationStatus: 'Terverifikasi lapangan', notes: 'Survei radiasi solar 4.8 kWh/m²/hari dan lahan bebas sengketa.' },
       kebutuhan_penggunaan: { status: 'Siap', verificationStatus: 'Terverifikasi lapangan', notes: 'Beban produktif cold storage & pompa air minum terdata rapi.' },
       literasi_kapasitas: { status: 'Siap', verificationStatus: 'Terverifikasi lapangan', notes: 'Pelatihan keselamatan warga selesai, 3 kader pemuda bersertifikasi.' },
-      partisipasi_inklusi: { status: 'Perlu penguatan', verificationStatus: 'Terverifikasi lapangan', notes: 'Forum dengar warga aktif, perlu penajaman dokumentasi revisi desain kelompok perempuan.' },
+      partisipasi_inklusi: { status: 'Siap', verificationStatus: 'Terverifikasi lapangan', notes: 'Notulensi musdes 18 Jan 2026 dan 3 masukan warga yang mengubah desain (lihat Dengar Warga) sudah terdokumentasi.' },
       kelembagaan: { status: 'Siap', verificationStatus: 'Terverifikasi lapangan', notes: 'Struktur pengurus Koperasi Desa Merah Putih sah berbadan hukum AHU.' },
       kelayakan_ekonomi: { status: 'Siap', verificationStatus: 'Terverifikasi lapangan', notes: 'Konsultasi tarif disepakati Rp 2.500/kWh, kepatuhan iuran warga 86%.' },
       keberlanjutan_om: { status: 'Siap', verificationStatus: 'Terverifikasi lapangan', notes: 'SOP harian/mingguan berjalan, rekening tabungan baterai terisi Rp 46 Jt.' },
@@ -160,7 +160,7 @@ const INITIAL_VILLAGES: Record<VillageId, VillageData> = {
     },
     prerequisites: {
       keselamatan_instalasi: { checked: true, evidenceNote: 'Audit teknis kelistrikan & sertifikat kelaikan operasi (SLO) lengkap.' },
-      proses_partisipasi: { checked: true, evidenceNote: 'Berita acara musdes 100% KK & bukti revisi tata letak tiang lengkap.' },
+      proses_partisipasi: { checked: true, evidenceNote: 'Berita acara musdes dihadiri 142 warga dari 4 kelompok (perempuan, pemuda, kelompok rentan, pelaku usaha) & bukti revisi tata letak tiang lengkap.' },
       rencana_om: { checked: true, evidenceNote: 'Buku rekening escrow sinking fund aktif dengan alokasi kas teratur.' },
       penanggung_jawab_operasi: { checked: true, evidenceNote: '3 teknisi terlatih bertugas dengan jadwal piket harian.' },
       perlindungan_kelompok_rentan: { checked: true, evidenceNote: 'Perdes perlindungan kelompok rentan & posko aduan warga aktif.' },
@@ -700,7 +700,7 @@ export function DesaWattProvider({ children }: { children: React.ReactNode }) {
       (stressScenarios.keterlambatanPembayaran ? 0.85 : 1.0) *
       (stressScenarios.perlindunganRumahTanggaRentan ? 0.92 : 1.0);
 
-    const baseAnnualKwh = activeVillage.capacityKwp * 3.8 * 365;
+    const baseAnnualKwh = activeVillage.capacityKwp * 3.81 * 365;
     const discountRate = 0.08;
     const years = Array.from({ length: horizonYears }, (_, i) => i + 1);
 

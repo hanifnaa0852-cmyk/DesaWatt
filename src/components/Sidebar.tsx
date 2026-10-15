@@ -95,14 +95,14 @@ export const Sidebar: React.FC = () => {
       className={`fixed left-0 top-0 h-screen bg-[#3F4E2C] border-r border-[#323E23] z-50 flex flex-col justify-between select-none shadow-[2px_0_12px_rgba(0,0,0,0.08)] transition-all duration-300 print:hidden ${
         isSidebarCollapsed
           ? 'w-[68px]'
-          : 'w-[68px] min-[1100px]:w-[220px] 2xl:w-[260px]'
+          : 'w-[68px] min-[1100px]:w-[300px] 2xl:w-[320px]'
       }`}
     >
       <div className="flex flex-col flex-1 min-h-0">
         {/* Brand Header with cream logo tile & Collapse Toggle */}
         <div
           className={`h-16 border-b border-[#4B5D2A] shrink-0 flex items-center transition-all ${
-            isSidebarCollapsed ? 'px-2.5 justify-center' : 'px-3.5 2xl:px-5 justify-between'
+            isSidebarCollapsed ? 'px-2.5 justify-center' : 'px-4 2xl:px-5 justify-between'
           }`}
         >
           <div className="flex items-center gap-2.5 min-w-0">
@@ -148,7 +148,7 @@ export const Sidebar: React.FC = () => {
         )}
 
         {/* Navigation list */}
-        <nav className="flex-1 px-2 min-[1100px]:px-2.5 2xl:px-3 pt-1.5 space-y-1 overflow-y-auto overflow-x-hidden">
+        <nav className="flex-1 px-2 min-[1100px]:px-3 pt-1.5 space-y-1 overflow-y-auto overflow-x-hidden">
           {navItems.map((item) => {
             const isActive = !('isPortalAction' in item) && activePage === item.id;
             return (
@@ -162,19 +162,19 @@ export const Sidebar: React.FC = () => {
                   }
                 }}
                 title={item.label}
-                className={`w-full flex items-center rounded-[12px] transition-all text-left font-bold text-[12.5px] 2xl:text-[13.5px] cursor-pointer group ${
+                className={`w-full flex items-center rounded-[12px] transition-all text-left font-bold cursor-pointer group ${
                   isSidebarCollapsed
                     ? 'justify-center p-2'
-                    : 'justify-center min-[1100px]:justify-between p-2 min-[1100px]:px-2.5 min-[1100px]:py-2 2xl:px-3 2xl:py-2.5'
+                    : 'p-2 min-[1100px]:px-3 min-[1100px]:py-2.5'
                 } ${
                   isActive
                     ? 'bg-[#E4E8D6] text-[#3F4E2C] shadow-sm font-black'
                     : 'text-[#EEF1DF] hover:bg-[#4B5D2A] hover:text-[#F7F8EE]'
                 }`}
               >
-                <div className="flex items-center gap-2 2xl:gap-2.5 min-w-0">
+                <div className="flex items-start gap-3 min-w-0 flex-1">
                   <span
-                    className={`material-symbols-outlined text-[19px] shrink-0 ${
+                    className={`material-symbols-outlined text-[20px] shrink-0 mt-0.5 ${
                       isActive
                         ? 'text-[#3F4E2C]'
                         : item.badgeColor === 'amber'
@@ -189,38 +189,41 @@ export const Sidebar: React.FC = () => {
                     {item.icon}
                   </span>
                   {!isSidebarCollapsed && (
-                    <div className="hidden min-[1100px]:flex flex-col min-w-0">
-                      <span className="truncate leading-tight">{item.label}</span>
-                      {item.sublabel && (
-                        <span
-                          className={`text-[8.5px] 2xl:text-[9px] truncate font-medium ${
-                            isActive ? 'text-[#3F4E2C]/80' : 'text-[#D4DCBC]/80'
-                          }`}
-                        >
-                          {item.sublabel}
-                        </span>
-                      )}
+                    <div className="hidden min-[1100px]:flex flex-col min-w-0 flex-1">
+                      <span className="text-[13.5px] leading-snug whitespace-nowrap font-extrabold">
+                        {item.label}
+                      </span>
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        {item.badge && (
+                          <span
+                            className={`text-[8.5px] px-1.5 py-0.2 rounded font-black uppercase tracking-wider shrink-0 ${
+                              isActive
+                                ? 'bg-[#3F4E2C] text-[#E4E8D6]'
+                                : item.badgeColor === 'amber'
+                                ? 'bg-[#F6E7BD] text-[#825708]'
+                                : item.badgeColor === 'gate'
+                                ? 'bg-[#FAFBF4] text-[#4B5D2A]'
+                                : item.badgeColor === 'public'
+                                ? 'bg-[#F6E7BD] text-[#825708]'
+                                : 'bg-[#4B5D2A] text-[#EEF1DF]'
+                            }`}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+                        {item.sublabel && (
+                          <span
+                            className={`text-[9.5px] truncate font-medium ${
+                              isActive ? 'text-[#3F4E2C]/85' : 'text-[#D4DCBC]/85'
+                            }`}
+                          >
+                            {item.sublabel}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
-
-                {!isSidebarCollapsed && item.badge && (
-                  <span
-                    className={`hidden min-[1100px]:inline text-[9px] px-1.5 py-0.2 rounded-full font-extrabold uppercase tracking-wider shrink-0 ${
-                      isActive
-                        ? 'bg-[#3F4E2C] text-[#E4E8D6]'
-                        : item.badgeColor === 'amber'
-                        ? 'bg-[#F6E7BD] text-[#825708]'
-                        : item.badgeColor === 'gate'
-                        ? 'bg-[#FAFBF4] text-[#4B5D2A]'
-                        : item.badgeColor === 'public'
-                        ? 'bg-[#F6E7BD] text-[#825708]'
-                        : 'bg-[#4B5D2A] text-[#EEF1DF]'
-                    }`}
-                  >
-                    {item.badge}
-                  </span>
-                )}
               </button>
             );
           })}

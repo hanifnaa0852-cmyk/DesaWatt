@@ -25,6 +25,44 @@ export const Beranda: React.FC = () => {
     return 'Energy-as-a-Service (EaaS)';
   };
 
+  // 7. Beranda Daya Sesaat (Dihitung otomatis)
+  const dayaSesaatKw = 38.4;
+  const bebanKw = 17.2;
+  const bebanPersen = Math.round((bebanKw / dayaSesaatKw) * 100); // 45%
+  const cadanganKw = Number((dayaSesaatKw - bebanKw).toFixed(1)); // 21.2 kW
+
+  // 1 & 5. Belajar Energi & Operator (Dihitung otomatis dari data sumber)
+  const pelatihanList = activeVillage.belajarEnergi?.pelatihanList || [];
+  const totalPesertaPelatihan = pelatihanList.reduce(
+    (acc, curr) => acc + (curr.jumlahPeserta || 0),
+    0
+  ) || 197;
+  const totalKK = activeVillage.connectionsKK || 240;
+  const persenKK = Math.round((totalPesertaPelatihan / totalKK) * 100); // 82%
+
+  // Rata-rata tertimbang Pre-test dan Post-test
+  const { weightedPreTest, weightedPostTest } = React.useMemo(() => {
+    let sumPre = 0;
+    let sumPost = 0;
+    let totalWeight = 0;
+    pelatihanList.forEach((item) => {
+      const p = item.jumlahPeserta || 0;
+      const preMatch = item.hasilPreTest.match(/(\d+)%/);
+      const postMatch = item.hasilPostTest.match(/(\d+)%/);
+      const preVal = preMatch ? parseInt(preMatch[1], 10) : 0;
+      const postVal = postMatch ? parseInt(postMatch[1], 10) : 0;
+      sumPre += preVal * p;
+      sumPost += postVal * p;
+      totalWeight += p;
+    });
+    return {
+      weightedPreTest: totalWeight > 0 ? Math.round(sumPre / totalWeight) : 42,
+      weightedPostTest: totalWeight > 0 ? Math.round(sumPost / totalWeight) : 90,
+    };
+  }, [pelatihanList]);
+
+  const operatorCount = activeVillage.kelolaBersama?.operators?.length || 3;
+
   return (
     <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto pb-12 text-[#3A4728] min-w-0">
       {/* Top Hero Banner */}
@@ -94,14 +132,14 @@ export const Beranda: React.FC = () => {
                 </span>
               </div>
               <div className="text-[26px] font-black text-[#1F2A14] mt-0.5 tracking-tight">
-                <CountUpNumber value={38.4} decimals={1} /> kW
+                <CountUpNumber value={dayaSesaatKw} decimals={1} /> kW
               </div>
               <div className="text-[12px] text-[#6B7753] mt-1 flex justify-between font-medium">
                 <span>
-                  Beban: <CountUpNumber value={64} />%
+                  Beban: <CountUpNumber value={bebanPersen} />%
                 </span>
                 <span className="text-[#4C9A52] font-bold">
-                  Cadangan: <CountUpNumber value={21.2} decimals={1} /> kW
+                  Cadangan: <CountUpNumber value={cadanganKw} decimals={1} /> kW
                 </span>
               </div>
             </div>
@@ -218,11 +256,11 @@ export const Beranda: React.FC = () => {
               <div className="p-3 rounded-xl bg-[#FAFBF4] border border-[#C5CCAE] mb-4 space-y-1 text-[11px]">
                 <div className="flex justify-between text-[#1F2A14] font-bold">
                   <span>Warga Terlatih:</span>
-                  <span className="text-[#27602C]">191 Warga (80% KK)</span>
+                  <span className="text-[#27602C]">{totalPesertaPelatihan} Warga ({persenKK}% KK)</span>
                 </div>
                 <div className="flex justify-between text-[#6B7753]">
                   <span>Peningkatan:</span>
-                  <span className="font-bold text-[#27602C]">Pre 41% → Post 91%</span>
+                  <span className="font-bold text-[#27602C]">Pre {weightedPreTest}% → Post {weightedPostTest}%</span>
                 </div>
               </div>
             </div>
@@ -305,8 +343,8 @@ export const Beranda: React.FC = () => {
                   <span className="text-[#4B5D2A]">{getModelLabel(effectiveModel)}</span>
                 </div>
                 <div className="flex justify-between text-[#6B7753]">
-                  <span>Arus Kas O&M:</span>
-                  <span>~Rp <CountUpNumber value={simulationResults.netAnnualAverageJuta} /> Jt / th</span>
+                  <span>Arus kas tahunan rata-rata:</span>
+                  <span className="font-bold text-[#1F2A14]">Rp <CountUpNumber value={simulationResults.netAnnualAverageJuta} decimals={1} /> Jt/thn</span>
                 </div>
               </div>
             </div>
@@ -343,8 +381,8 @@ export const Beranda: React.FC = () => {
 
               <div className="p-3 rounded-xl bg-[#FAFBF4] border border-[#C5CCAE] mb-4 space-y-1 text-[11px]">
                 <div className="flex justify-between text-[#1F2A14] font-bold">
-                  <span>Teknisi Terlatih:</span>
-                  <span className="text-[#825708]">3 Pemuda Siaga</span>
+                  <span>Operator Terlatih:</span>
+                  <span className="text-[#825708]">{operatorCount} Orang Siaga</span>
                 </div>
                 <div className="flex justify-between text-[#6B7753]">
                   <span>SOP Disepakati:</span>

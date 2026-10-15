@@ -18,19 +18,19 @@ export const BelajarEnergi: React.FC = () => {
       {
         id: 'PEL-1',
         kelompok: 'Rumah Tangga' as KelompokPelatihan,
-        jumlahPeserta: 75,
+        jumlahPeserta: 78,
         hasilPreTest: '38% (Pemahaman etika beban & keselamatan dasar rendah)',
         hasilPostTest: '89% (Paham etika beban malam & pemilihan lampu LED)',
-        tindakLanjut: 'Sudah' as const,
+        tindakLanjut: 'Terjadwal' as const,
         catatanTindakLanjut: 'Pemeriksaan acak MCB rumah dan pembagian stiker etika beban.',
       },
       {
         id: 'PEL-2',
         kelompok: 'Operator' as KelompokPelatihan,
-        jumlahPeserta: 6,
+        jumlahPeserta: 3,
         hasilPreTest: '46% (Pengalaman terbatas genset solar manual)',
         hasilPostTest: '94% (Lulus uji SOP baterai, inverter, & keselamatan K3)',
-        tindakLanjut: 'Sudah' as const,
+        tindakLanjut: 'Terjadwal' as const,
         catatanTindakLanjut: 'Pencatatan logsheet bus voltage dan perawatan filter inverter harian.',
       },
       {
@@ -39,7 +39,7 @@ export const BelajarEnergi: React.FC = () => {
         jumlahPeserta: 12,
         hasilPreTest: '52% (Pembukuan kas manual buku tulis sederhana)',
         hasilPostTest: '90% (Menguasai rekening escrow sinking fund baterai)',
-        tindakLanjut: 'Sudah' as const,
+        tindakLanjut: 'Terjadwal' as const,
         catatanTindakLanjut: 'Laporan keuangan bulanan kas O&M ditempel di papan balai desa.',
       },
       {
@@ -48,7 +48,7 @@ export const BelajarEnergi: React.FC = () => {
         jumlahPeserta: 24,
         hasilPreTest: '41% (Cenderung menyalakan mesin produktif malam hari)',
         hasilPostTest: '88% (Komitmen disiplin shift operasi siang 09:30-13:30)',
-        tindakLanjut: 'Sudah' as const,
+        tindakLanjut: 'Terjadwal' as const,
         catatanTindakLanjut: 'Penjadwalan operasi mesin giling kopi dan pompa air terkoordinasi.',
       },
       {
@@ -57,7 +57,7 @@ export const BelajarEnergi: React.FC = () => {
         jumlahPeserta: 32,
         hasilPreTest: '43% (Belum paham bahaya tegangan DC tinggi)',
         hasilPostTest: '91% (Terlatih tim siaga tanggap ranting & evakuasi darurat)',
-        tindakLanjut: 'Sudah' as const,
+        tindakLanjut: 'Terjadwal' as const,
         catatanTindakLanjut: 'Patroli berkala jalur kabel udara dusun menjelang musim angin.',
       },
       {
@@ -66,7 +66,7 @@ export const BelajarEnergi: React.FC = () => {
         jumlahPeserta: 48,
         hasilPreTest: '44% (Khawatir listrik padam mendadak merusak kulkas)',
         hasilPostTest: '92% (Menguasai pembagian beban rumah tangga & usaha kue)',
-        tindakLanjut: 'Sudah' as const,
+        tindakLanjut: 'Terjadwal' as const,
         catatanTindakLanjut: 'Kader posyandu memantau kulkas vaksin dan keluhan layanan warga.',
       },
     ],
@@ -124,6 +124,9 @@ export const BelajarEnergi: React.FC = () => {
     (acc, curr) => acc + (curr.jumlahPeserta || 0),
     0
   );
+
+  const totalKK = activeVillage.connectionsKK || 240;
+  const persenKK = Math.round((totalPesertaSemuaKelompok / totalKK) * 100); // 82%
 
   const totalKelompokSudahTindakLanjut = data.pelatihanList.filter(
     (i) => i.tindakLanjut === 'Sudah'
@@ -319,7 +322,7 @@ export const BelajarEnergi: React.FC = () => {
               </span>
             </div>
             <div className="text-[26px] font-black text-[#27602C]">
-              {totalPesertaSemuaKelompok} <span className="text-[14px] text-[#6B7753] font-bold">Warga Terdata</span>
+              {totalPesertaSemuaKelompok} <span className="text-[14px] text-[#6B7753] font-bold">Warga ({persenKK}% KK)</span>
             </div>
             <p className="text-[11px] text-[#3A4728] mt-1 leading-relaxed">
               Peserta yang menyelesaikan sesi pengukuran pre-test dan evaluasi post-test.
@@ -342,7 +345,7 @@ export const BelajarEnergi: React.FC = () => {
               <span className="text-[14px] font-bold text-[#825708]">Kelompok</span>
             </div>
             <p className="text-[11px] text-[#3A4728] mt-1 leading-relaxed">
-              Kelompok yang telah dievaluasi kembali setelah 3 hingga 6 bulan pasca-pelatihan.
+              Terjadwal setelah Tahap 3 selesai
             </p>
           </div>
         </GlowingMetricCard>
@@ -367,30 +370,30 @@ export const BelajarEnergi: React.FC = () => {
 
         {/* Table Container */}
         <div className="overflow-x-auto rounded-xl border border-[#C5CCAE] bg-[#FAFBF4]">
-          <table className="w-full text-left text-[12.5px] border-collapse min-w-[700px]">
+          <table className="w-full text-left text-[12.5px] border-collapse min-w-[950px]">
             <thead>
               <tr className="bg-[#E4E8D6] text-[#1F2A14] font-black text-[12px] border-b border-[#C5CCAE]">
-                <th className="py-3 px-3.5 w-[180px]">Kelompok Sasaran</th>
-                <th className="py-3 px-3.5 w-[110px] text-center">Jumlah Peserta</th>
-                <th className="py-3 px-3.5 w-[220px]">Hasil Pre-Test</th>
-                <th className="py-3 px-3.5 w-[220px]">Hasil Post-Test</th>
-                <th className="py-3 px-3.5 w-[160px] text-center">Tindak Lanjut 3-6 Bln</th>
-                <th className="py-3 px-3.5">Catatan Tindak Lanjut</th>
+                <th className="py-3 px-3.5 w-[160px]">Kelompok Sasaran</th>
+                <th className="py-3 px-3.5 w-[90px] text-center">Jumlah Peserta</th>
+                <th className="py-3 px-3.5 min-w-[240px]">Hasil Pre-Test</th>
+                <th className="py-3 px-3.5 min-w-[240px]">Hasil Post-Test</th>
+                <th className="py-3 px-3.5 w-[150px] text-center">Tindak Lanjut 3-6 Bln</th>
+                <th className="py-3 px-3.5 min-w-[240px]">Catatan Tindak Lanjut</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#C5CCAE]">
               {data.pelatihanList.map((item) => (
                 <tr key={item.id} className="hover:bg-[#F3F5EA]/60 transition-colors">
                   {/* Kelompok */}
-                  <td className="py-3 px-3.5 font-bold text-[#1F2A14]">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-[#4B5D2A]"></span>
+                  <td className="py-3 px-3.5 font-bold text-[#1F2A14] align-top">
+                    <div className="flex items-center gap-2 pt-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#4B5D2A] shrink-0"></span>
                       <span>{item.kelompok}</span>
                     </div>
                   </td>
 
                   {/* Jumlah Peserta */}
-                  <td className="py-3 px-3.5 text-center">
+                  <td className="py-3 px-3.5 text-center align-top">
                     <input
                       type="number"
                       min="0"
@@ -400,62 +403,68 @@ export const BelajarEnergi: React.FC = () => {
                           jumlahPeserta: parseInt(e.target.value) || 0,
                         })
                       }
-                      className="w-16 p-1.5 rounded-lg border border-[#C5CCAE] bg-[#F3F5EA] text-center font-bold text-[#1F2A14]"
+                      className="w-16 p-1.5 rounded-lg border border-[#C5CCAE] bg-[#F3F5EA] text-center font-bold text-[#1F2A14] mt-0.5"
                     />
                   </td>
 
-                  {/* Hasil Pre-Test */}
-                  <td className="py-3 px-3.5">
-                    <input
-                      type="text"
+                  {/* Hasil Pre-Test (Wrap text, tooltip on hover) */}
+                  <td className="py-3 px-3.5 align-top">
+                    <textarea
+                      rows={2}
+                      title={item.hasilPreTest}
                       value={item.hasilPreTest}
                       onChange={(e) =>
                         handleUpdateItem(item.id, {
                           hasilPreTest: e.target.value,
                         })
                       }
-                      className="w-full p-1.5 rounded-lg border border-[#C5CCAE] bg-[#F3F5EA] text-[12px] text-[#1F2A14] font-medium"
+                      className="w-full p-2 rounded-lg border border-[#C5CCAE] bg-[#F3F5EA] text-[12px] text-[#1F2A14] font-medium leading-relaxed whitespace-normal break-words resize-y"
                     />
                   </td>
 
-                  {/* Hasil Post-Test */}
-                  <td className="py-3 px-3.5">
-                    <input
-                      type="text"
+                  {/* Hasil Post-Test (Wrap text, tooltip on hover) */}
+                  <td className="py-3 px-3.5 align-top">
+                    <textarea
+                      rows={2}
+                      title={item.hasilPostTest}
                       value={item.hasilPostTest}
                       onChange={(e) =>
                         handleUpdateItem(item.id, {
                           hasilPostTest: e.target.value,
                         })
                       }
-                      className="w-full p-1.5 rounded-lg border border-[#C5CCAE] bg-[#F3F5EA] text-[12px] text-[#1F2A14] font-medium"
+                      className="w-full p-2 rounded-lg border border-[#C5CCAE] bg-[#F3F5EA] text-[12px] text-[#1F2A14] font-medium leading-relaxed whitespace-normal break-words resize-y"
                     />
                   </td>
 
                   {/* Tindak Lanjut 3-6 Bulan */}
-                  <td className="py-3 px-3.5 text-center">
+                  <td className="py-3 px-3.5 text-center align-top">
                     <select
                       value={item.tindakLanjut}
                       onChange={(e) =>
                         handleUpdateItem(item.id, {
-                          tindakLanjut: e.target.value as 'Belum dilakukan' | 'Sudah',
+                          tindakLanjut: e.target.value as 'Belum dilakukan' | 'Sudah' | 'Terjadwal',
                         })
                       }
-                      className={`p-1.5 rounded-lg text-[11px] font-extrabold border cursor-pointer ${
+                      className={`p-1.5 rounded-lg text-[11px] font-extrabold border cursor-pointer mt-0.5 ${
                         item.tindakLanjut === 'Sudah'
                           ? 'bg-[#E2F0E4] text-[#27602C] border-[#C2E0C5]'
+                          : item.tindakLanjut === 'Terjadwal'
+                          ? 'bg-[#FEF6E9] text-[#96600E] border-[#FCDCA7]'
                           : 'bg-[#F9DFDC] text-[#8B281B] border-[#ECAAA4]'
                       }`}
                     >
+                      <option value="Terjadwal">Terjadwal</option>
                       <option value="Sudah">Sudah</option>
                       <option value="Belum dilakukan">Belum dilakukan</option>
                     </select>
                   </td>
 
-                  {/* Catatan Tindak Lanjut */}
-                  <td className="py-3 px-3.5">
-                    <input
-                      type="text"
+                  {/* Catatan Tindak Lanjut (Wrap text, tooltip on hover) */}
+                  <td className="py-3 px-3.5 align-top">
+                    <textarea
+                      rows={2}
+                      title={item.catatanTindakLanjut || ''}
                       value={item.catatanTindakLanjut || ''}
                       onChange={(e) =>
                         handleUpdateItem(item.id, {
@@ -463,7 +472,7 @@ export const BelajarEnergi: React.FC = () => {
                         })
                       }
                       placeholder="Catatan pendampingan lanjutan..."
-                      className="w-full p-1.5 rounded-lg border border-[#C5CCAE] bg-[#F3F5EA] text-[11.5px] text-[#3A4728]"
+                      className="w-full p-2 rounded-lg border border-[#C5CCAE] bg-[#F3F5EA] text-[11.5px] text-[#3A4728] leading-relaxed whitespace-normal break-words resize-y"
                     />
                   </td>
                 </tr>
